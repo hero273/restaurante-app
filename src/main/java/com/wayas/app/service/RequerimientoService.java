@@ -36,15 +36,23 @@ public class RequerimientoService {
         return repoReq.findById(id).orElse(null);
     }
 
+    /**
+     * Lógica modificada para evitar error 'Duplicate entry'.
+     * 1. Guarda la entidad Requerimiento (con código nulo) para obtener un ID único.
+     * 2. Usa ese ID único para generar el 'codigoRequerimiento'.
+     * 3. Actualiza la entidad con el código final.
+     * Todo esto ocurre dentro de una sola transacción.
+     */
     @Transactional
     public Requerimiento crearRequerimiento(List<Long> insumoIds, List<BigDecimal> cantidades, List<Integer> proveedorIds) {
         Requerimiento req = new Requerimiento();
         req.setFechaGeneracion(LocalDate.now());
         req.setEstado("PENDIENTE");
        
-        long count = repoReq.count();
-        req.setCodigoRequerimiento(String.format("REQ-%d-%04d", LocalDate.now().getYear(), count + 1));
+        // 1. Dejar el código nulo temporalmente
+        req.setCodigoRequerimiento(null);
 
+        // 2. Agregar los detalles
         if (insumoIds != null) {
             for (int i = 0; i < insumoIds.size(); i++) {
                 Long idInsumo = insumoIds.get(i);
@@ -64,7 +72,18 @@ public class RequerimientoService {
             }
         }
 
-        return repoReq.save(req);
+        // 3. Guardar la entidad (con detalles) para que la BD asigne el ID
+        Requerimiento reqGuardado = repoReq.save(req);
+
+        // 4. Usar el ID (que sí es único) para generar el código
+        String codigoFinal = String.format("REQ-%d-%04d", 
+                                     reqGuardado.getFechaGeneracion().getYear(), 
+                                     reqGuardado.getId());
+        
+        reqGuardado.setCodigoRequerimiento(codigoFinal);
+
+        // 5. Actualizar la entidad con el código final (ocurre en la misma transacción)
+        return repoReq.save(reqGuardado);
     }
 
     @Transactional
