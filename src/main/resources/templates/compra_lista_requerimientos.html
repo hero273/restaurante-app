@@ -123,7 +123,11 @@
                         <tbody>
                             <tr th:each="req : ${requerimientosHistorial}">
                                 <td th:text="${req.codigoRequerimiento}">REQ-00125</td>
-                                <td th:text="${#temporals.format(req.fechaGeneracion, 'dd-MM-yyyy')}">10-10-2025</td>
+                                
+                                <!-- ================== LÍNEA MODIFICADA ================== -->
+                                <td th:text="${req.fechaGeneracion} ? ${#temporals.format(req.fechaGeneracion, 'dd-MM-yyyy')} : 'FECHA NULA'">10-10-2025</td>
+                                <!-- ======================================================== -->
+
                                 <td>
                                     <span class="badge"
                                           th:classappend="${#strings.equalsIgnoreCase(req.estado, 'PENDIENTE')} ? 'bg-warning text-dark' : (${#strings.equalsIgnoreCase(req.estado, 'COMPRADO')} ? 'bg-info text-dark' : (${#strings.equalsIgnoreCase(req.estado, 'INGRESADO')} ? 'bg-success' : 'bg-secondary'))"
