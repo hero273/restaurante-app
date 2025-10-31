@@ -13,14 +13,8 @@
   <div class="container py-5">
     <h2 class="text-center mb-4 title-wayas">🧾 Registrar Compra en el Sistema</h2>
 
-    <div th:if="${mensajeExito}" class="alert alert-success alert-dismissible fade show" role="alert">
-        <span th:text="${mensajeExito}"></span>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-    <div th:if="${mensajeError}" class="alert alert-danger alert-dismissible fade show" role="alert">
-        <span th:text="${mensajeError}"></span>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
+    <div th:if="${mensajeExito}" class="alert alert-success alert-dismissible fade show" role="alert">...</div>
+    <div th:if="${mensajeError}" class="alert alert-danger alert-dismissible fade show" role="alert">...</div>
 
     <div class="card shadow mb-4">
       <div class="card-body">
@@ -59,9 +53,9 @@
           </div>
 
           <div class="col-12 mt-4">
-            <h5>📦 Detalle de Insumos Comprados (Actualizará el Stock)</h5>
+            <h5>📦 Detalle de Insumos Comprados</h5>
             <div id="listaInsumosDetalle">
-            </div>
+              </div>
             <button type="button" class="btn btn-sm btn-outline-primary mt-2" onclick="agregarFilaDetalle()">➕ Agregar Insumo</button>
           </div>
           <div class="col-md-12 mt-3">
@@ -76,29 +70,6 @@
         </form>
       </div>
     </div>
-    <div id="plantillaInsumo" class="d-none">
-      <div class="row g-3 mb-2 align-items-end detalle-row">
-        <div class="col-md-5">
-          <label class="form-label small mb-0 d-none d-md-block">Insumo</label>
-          <!-- Los 'name' son importantes: insumoIds y cantidades -->
-          <select class="form-select form-select-sm" name="insumoIds" required>
-            <option value="" selected disabled>Seleccionar insumo...</option>
-            <!-- Thymeleaf llena esta plantilla con todos los insumos disponibles -->
-            <option th:each="ins : ${todosLosInsumos}"
-                    th:value="${ins.idInsumo}"
-                    th:text="${ins.descripcion + ' (' + ins.unidadMedida + ')'}">
-            </option>
-          </select>
-        </div>
-        <div class="col-md-3">
-          <label class="form-label small mb-0 d-none d-md-block">Cantidad</label>
-          <input type="number" step="0.001" class="form-control form-control-sm" name="cantidades" placeholder="Cantidad" required>
-        </div>
-        <div class="col-md-1 col-3">
-          <button type="button" class="btn btn-sm btn-danger w-100" onclick="eliminarFilaDetalle(this)" title="Eliminar Insumo">🗑️</button>
-        </div>
-      </div>
-    </div>
 
     <div class="text-center mt-4">
       <a th:href="@{/gestion_compra}" class="btn btn-secondary">⬅ Volver a Gestión de Compra</a>
@@ -107,20 +78,12 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
-  <script>
-    function agregarFilaDetalle() {
-      const listaDiv = document.getElementById('listaInsumosDetalle');
-      const plantilla = document.getElementById('plantillaInsumo');
-
-      if (plantilla) {
-        const nuevaFila = plantilla.firstElementChild.cloneNode(true);
-        listaDiv.appendChild(nuevaFila);
-      }
-    }
-
-    function eliminarFilaDetalle(button) {
-      button.closest('.detalle-row').remove();
-    }
+  <script th:inline="javascript">
+    /*<![CDATA[*/
+    const todosLosInsumos = /*[[${todosLosInsumos}]]*/ []; 
+    function agregarFilaDetalle() { ... }
+    function eliminarFilaDetalle(button) { ... }
+    /*]]>*/
   </script>
 
 </body>
