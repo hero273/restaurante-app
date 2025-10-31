@@ -13,46 +13,41 @@
     <div class="container py-5">
         <h2 class="text-center mb-4 title-wayas">📦 Generar Lista de Requerimientos</h2>
 
-         <div th:if="${mensajeExito}" class="alert alert-success alert-dismissible fade show" role="alert">
-          <span th:text="${mensajeExito}"></span>
-          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-        <div th:if="${mensajeError}" class="alert alert-danger alert-dismissible fade show" role="alert">
-          <span th:text="${mensajeError}"></span>
-          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-        <div th:if="${mensajeTemporal}" class="alert alert-info alert-dismissible fade show" role="alert">
-          <span th:text="${mensajeTemporal}"></span>
-          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
+         <div th:if="${mensajeExito}" class="alert alert-success alert-dismissible fade show" role="alert">...</div>
+         <div th:if="${mensajeError}" class="alert alert-danger alert-dismissible fade show" role="alert">...</div>
+         <div th:if="${mensajeTemporal}" class="alert alert-info alert-dismissible fade show" role="alert">...</div>
 
 
         <div class="card mb-4 shadow">
             <div class="card-body">
                 <h5 class="card-title">⚠️ Insumos con stock bajo</h5>
                 <div class="table-responsive">
-                    <table class="table table-bordered table-sm"> <thead class="table-light">
+                    <table class="table table-bordered table-sm"> 
+                        <thead class="table-light">
                             <tr>
                                 <th>Nombre</th>
                                 <th>Actual</th>
                                 <th>Unidad</th>
                                 <th>Proveedor Sug.</th>
-                                <th>Cantidad</th> <th>Acción</th>
+                                <th>Cantidad</th> 
+                                <th>Acción</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr th:each="ins : ${insumosBajoStock}">
                                 <td th:text="${ins.descripcion}">Lechuga</td>
-                                <td th:text="${#numbers.formatDecimal(ins.stockActual, 1, 'COMMA', 1, 'POINT')}">5.0</td> <td th:text="${ins.unidadMedida}">kg</td>
+                                <td th:text="${#numbers.formatDecimal(ins.stockActual, 1, 'COMMA', 1, 'POINT')}">5.0</td> 
+                                <td th:text="${ins.unidadMedida}">kg</td>
                                 <td th:text="${ins.proveedor?.razonSocial} ?: '-'">AgroPerú</td>
-                                <form th:action="@{/compra/requerimientos/agregarItem}" method="post" class="d-contents"> <td>
-                                        <input type="hidden" name="insumoId" th:value="${ins.idInsumo}" />
-                                        <input type="hidden" name="proveedorId" th:value="${ins.proveedor?.idProv}" />
-                                        <input type="number" step="0.01" name="cantidad" value="1" min="0.01" class="form-control form-control-sm" style="width: 80px;" required />
-                                    </td>
-                                    <td>
-                                        <button type="submit" class="btn btn-sm btn-success" title="Agregar a requerimiento actual">➕</button>
-                                    </td>
+                                <form th:action="@{/requerimientos/agregarItem}" method="post" class="d-contents"> 
+                                <td>
+                                    <input type="hidden" name="insumoId" th:value="${ins.idInsumo}" />
+                                    <input type="hidden" name="proveedorId" th:value="${ins.proveedor?.idProv}" />
+                                    <input type="number" step="0.01" name="cantidad" value="1" min="0.01" class="form-control form-control-sm" style="width: 80px;" required />
+                                </td>
+                                <td>
+                                    <button type="submit" class="btn btn-sm btn-success" title="Agregar a requerimiento actual">➕</button>
+                                </td>
                                 </form>
                             </tr>
                             <tr th:if="${#lists.isEmpty(insumosBajoStock)}">
@@ -88,7 +83,7 @@
                                 <td th:text="${detalle.insumo?.unidadMedida}">kg</td>
                                 <td th:text="${detalle.proveedor?.razonSocial} ?: '-'">Proveedor Nombre</td>
                                 <td>
-                                    <form th:action="@{/compra/requerimientos/eliminarItem}" method="post" class="d-inline">
+                                    <form th:action="@{/requerimientos/eliminarItem}" method="post" class="d-inline">
                                         <input type="hidden" name="index" th:value="${iterStat.index}" />
                                         <button type="submit" class="btn btn-sm btn-danger" title="Eliminar ítem">🗑️</button>
                                     </form>
@@ -99,7 +94,7 @@
                 </div>
 
                 <div class="text-end mt-3" th:if="${requerimientoActual != null and not #lists.isEmpty(requerimientoActual.detalles)}">
-                     <form th:action="@{/compra/requerimientos/guardar}" method="post">
+                     <form th:action="@{/requerimientos/guardar}" method="post">
                          <button type="submit" class="btn btn-success">📤 Generar y Guardar Requerimiento</button>
                      </form>
                 </div>
@@ -123,11 +118,7 @@
                         <tbody>
                             <tr th:each="req : ${requerimientosHistorial}">
                                 <td th:text="${req.codigoRequerimiento}">REQ-00125</td>
-                                
-                                <!-- ================== LÍNEA MODIFICADA ================== -->
                                 <td th:text="${req.fechaGeneracion} ? ${#temporals.format(req.fechaGeneracion, 'dd-MM-yyyy')} : 'FECHA NULA'">10-10-2025</td>
-                                <!-- ======================================================== -->
-
                                 <td>
                                     <span class="badge"
                                           th:classappend="${#strings.equalsIgnoreCase(req.estado, 'PENDIENTE')} ? 'bg-warning text-dark' : (${#strings.equalsIgnoreCase(req.estado, 'COMPRADO')} ? 'bg-info text-dark' : (${#strings.equalsIgnoreCase(req.estado, 'INGRESADO')} ? 'bg-success' : 'bg-secondary'))"
@@ -142,8 +133,9 @@
                                 </td>
                                <td>
                                  <div class="d-flex gap-1">
-                                    <a href="#" th:href="@{/compra/requerimientos/detalle/{id}(id=${req.id})}" class="btn btn-sm btn-outline-primary disabled" title="Ver Detalle">🔍</a> <form th:if="${#strings.equalsIgnoreCase(req.estado, 'PENDIENTE')}"
-                                          th:action="@{/compra/requerimientos/eliminar/{id}(id=${req.id})}" method="post" class="d-inline"
+                                    <a href="#" th:href="@{/requerimientos/detalle/{id}(id=${req.id})}" class="btn btn-sm btn-outline-primary disabled" title="Ver Detalle">🔍</a> 
+                                    <form th:if="${#strings.equalsIgnoreCase(req.estado, 'PENDIENTE')}"
+                                          th:action="@{/requerimientos/eliminar/{id}(id=${req.id})}" method="post" class="d-inline"
                                           th:data-codigo="${req.codigoRequerimiento}" onsubmit="return confirmarEliminacionRequerimiento(this);">
                                           <button type="submit" class="btn btn-sm btn-outline-danger" title="Eliminar">🗑️</button>
                                     </form>
@@ -162,21 +154,14 @@
         <div class="text-center mt-4">
             <a th:href="@{/gestion_compra}" class="btn btn-secondary">⬅ Volver a Gestión de Compra</a>
         </div>
-
-        <div class="modal fade" id="modalCambiarProveedor" tabindex="-1">...</div>
-        <div class="modal fade" id="modalDesempenoProveedor" tabindex="-1">...</div>
-        <div class="modal fade" id="modalOpcionesRequerimiento" tabindex="-1">...</div>
-
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
     <script>
         function confirmarEliminacionRequerimiento(formElement) {
             const codigo = formElement.getAttribute('data-codigo');
             return confirm('¿Estás seguro de eliminar el requerimiento ' + (codigo || 'seleccionado') + '?');
         }
     </script>
-
 </body>
 </html>

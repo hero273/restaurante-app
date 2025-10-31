@@ -13,18 +13,12 @@
   <div class="container py-5">
     <h2 class="text-center mb-4 title-wayas">🧾 Registrar Compra en el Sistema</h2>
 
-    <div th:if="${mensajeExito}" class="alert alert-success alert-dismissible fade show" role="alert">
-        <span th:text="${mensajeExito}"></span>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-    <div th:if="${mensajeError}" class="alert alert-danger alert-dismissible fade show" role="alert">
-        <span th:text="${mensajeError}"></span>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
+    <div th:if="${mensajeExito}" class="alert alert-success alert-dismissible fade show" role="alert">...</div>
+    <div th:if="${mensajeError}" class="alert alert-danger alert-dismissible fade show" role="alert">...</div>
 
     <div class="card shadow mb-4">
       <div class="card-body">
-        <form id="formCompra" class="row g-3" th:action="@{/compra/registrar/guardar}" method="post" th:object="${compra}">
+        <form id="formCompra" class="row g-3" th:action="@{/compras/registrar/guardar}" method="post" th:object="${compra}">
           <div class="col-md-4">
             <label for="codigoRequerimiento" class="form-label">Código de requerimiento <span class="text-danger">*</span></label>
             <select class="form-select" id="codigoRequerimiento" name="idRequerimiento" required>
@@ -86,51 +80,9 @@
 
   <script th:inline="javascript">
     /*<![CDATA[*/
-    const todosLosInsumos = /*[[${todosLosInsumos}]]*/ []; // Obtiene la lista de insumos del modelo
-
-    function agregarFilaDetalle() {
-      const listaDiv = document.getElementById('listaInsumosDetalle');
-      const nuevaFila = document.createElement('div');
-      nuevaFila.classList.add('row', 'g-3', 'mb-2', 'align-items-end', 'detalle-row');
-
-      // Crear el select de insumos
-      let selectOptions = '<option value="" selected disabled>Seleccionar insumo...</option>';
-      todosLosInsumos.forEach(insumo => {
-        // Escapar caracteres especiales en la descripción para el HTML
-        const descripcionEscapada = String(insumo.descripcion || '').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-        selectOptions += `<option value="${insumo.idInsumo}">${descripcionEscapada} (${insumo.unidadMedida || 'N/A'})</option>`;
-      });
-
-      nuevaFila.innerHTML = `
-        <div class="col-md-5">
-          <label class="form-label small mb-0 d-none d-md-block">Insumo</label> <select class="form-select form-select-sm" name="insumoIds" required>
-            ${selectOptions}
-          </select>
-        </div>
-        <div class="col-md-3">
-          <label class="form-label small mb-0 d-none d-md-block">Cantidad</label>
-          <input type="number" step="0.001" class="form-control form-control-sm" name="cantidades" placeholder="Cantidad" required>
-        </div>
-        <div class="col-md-1 col-3"> <button type="button" class="btn btn-sm btn-danger w-100" onclick="eliminarFilaDetalle(this)" title="Eliminar Insumo">🗑️</button>
-        </div>
-      `;
-      listaDiv.appendChild(nuevaFila);
-    }
-
-    function eliminarFilaDetalle(button) {
-      // Encuentra el div 'detalle-row' padre y lo elimina
-      button.closest('.detalle-row').remove();
-    }
-
-     // Opcional: Agregar una fila inicial al cargar la página si no hay detalles previos
-     document.addEventListener('DOMContentLoaded', (event) => {
-        const listaDiv = document.getElementById('listaInsumosDetalle');
-        if(listaDiv && listaDiv.children.length === 0) {
-             // Puedes descomentar la siguiente línea si quieres que siempre empiece con una fila
-             // agregarFilaDetalle();
-        }
-     });
-
+    const todosLosInsumos = /*[[${todosLosInsumos}]]*/ []; 
+    function agregarFilaDetalle() { ... }
+    function eliminarFilaDetalle(button) { ... }
     /*]]>*/
   </script>
 
