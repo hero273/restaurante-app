@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Aplicar Requerimientos al Inventario</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Estilos personalizados -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+  <div class="container py-5">
+    <h2 class="text-center mb-4 title-wayas">📥 Requerimientos Comprados</h2>
+
+    <!-- Filtro de búsqueda -->
+    <div class="row mb-4">
+      <div class="col-md-6">
+        <input type="text" class="form-control" placeholder="🔍 Buscar por código o proveedor...">
+      </div>
+    </div>
+
+    <!-- Tabla de requerimientos -->
+    <div class="card shadow mb-4">
+      <div class="card-body">
+        <h5 class="card-title">📦 Requerimientos pendientes de ingreso</h5>
+        <table class="table table-bordered table-hover">
+          <thead class="table-light">
+            <tr>
+              <th>Código</th>
+              <th>Proveedor</th>
+              <th>Fecha de compra</th>
+              <th>Insumos</th>
+              <th>Estado</th>
+              <th>Acción</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+            <tr>
+              <td>REQ-0001</td>
+              <td>Distribuidora Trujillork</td>
+              <td>2025-10-15</td>
+              <td>
+                <ul class="mb-0">
+                  <li>Tomate - 12 kg</li>
+                  <li>Pollo - 8 kg</li>
+                  <li>Cebolla - 5 kg</li>
+                </ul>
+              </td>
+              <td><span class="badge bg-info text-dark">Comprado</span></td>
+              <td><button class="btn btn-sm btn-success" onclick="confirmarIngreso('REQ-001')">Aprobar e ingresar al
+                  Inventario</button></td>
+            </tr>
+            <tr>
+              <td>REQ-0002</td>
+              <td>Frutas del Norte</td>
+              <td>2025-10-14</td>
+              <td>
+                <ul class="mb-0">
+                  <li>Manzana - 6 kg</li>
+                  <li>Zanahoria - 4 kg</li>
+                  <li>Plátano - 5 kg</li>
+                </ul>
+              </td>
+              <td><span class="badge bg-info text-dark">Comprado</span></td>
+              <td><button class="btn btn-sm btn-success" onclick="confirmarIngreso('REQ-002')">Aprobar e ingresar al
+                  Inventario</button></td>
+            </tr>
+            <tr>
+              <td>REQ-0003</td>
+              <td>Mariscos Trujillo</td>
+              <td>2025-10-13</td>
+              <td>
+                <ul class="mb-0">
+                  <li>Pescado - 6 kg</li>
+                  <li>Calamar - 3 kg</li>
+                </ul>
+              </td>
+              <td><span class="badge bg-info text-dark">Comprado</span></td>
+              <td><button class="btn btn-sm btn-success" onclick="confirmarIngreso('REQ-003')">Aprobar e ingresar al
+                  Inventario</button></td>
+            </tr>
+            <tr>
+              <td>REQ-0004</td>
+              <td>Granos del Valle</td>
+              <td>2025-10-12</td>
+              <td>
+                <ul class="mb-0">
+                  <li>Arroz - 25 kg</li>
+                  <li>Lentejas - 10 kg</li>
+                  <li>Sal - 3 kg</li>
+                </ul>
+              </td>
+              <td><span class="badge bg-info text-dark">Comprado</span></td>
+              <td><button class="btn btn-sm btn-success" onclick="confirmarIngreso('REQ-004')">Aprobar e ingresar al
+                  Inventario</button></td>
+            </tr>
+            <tr>
+              <td>REQ-0005</td>
+              <td>Aceites y Condimentos S.A.C.</td>
+              <td>2025-10-11</td>
+              <td>
+                <ul class="mb-0">
+                  <li>Aceite vegetal - 10 litros</li>
+                  <li>Vinagre - 2 litros</li>
+                  <li>Ají amarillo - 1.5 kg</li>
+                </ul>
+              </td>
+              <td><span class="badge bg-info text-dark">Comprado</span></td>
+              <td><button class="btn btn-sm btn-success" onclick="confirmarIngreso('REQ-005')">Aprobar e ingresar al
+                  Inventario</button></td>
+            </tr>
+            <tr>
+              <td>REQ-0006</td>
+              <td>Verduras Frescas Trujillo</td>
+              <td>2025-10-10</td>
+              <td>
+                <ul class="mb-0">
+                  <li>Lechuga - 4 kg</li>
+                  <li>Repollo - 3 kg</li>
+                  <li>Culantro - 1 kg</li>
+                </ul>
+              </td>
+              <td><span class="badge bg-info text-dark">Comprado</span></td>
+              <td><button class="btn btn-sm btn-success" onclick="confirmarIngreso('REQ-006')">Aprobar e ingresar al
+                  Inventario</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Confirmación -->
+    <script>
+      function confirmarIngreso(codigo) {
+        if (confirm(`¿Deseas aprobar el requerimiento ${codigo} e ingresar los insumos al inventario?`)) {
+          alert(`Requerimiento ${codigo} aprobado. Inventario actualizado correctamente.`);
+          // Aquí iría la lógica para actualizar el inventario en base de datos
+        }
+      }
+    </script>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  </div>
+</body>
+
+</html>

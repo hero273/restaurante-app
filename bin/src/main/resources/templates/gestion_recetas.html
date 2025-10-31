@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<!-- AÑADIMOS xmlns:th PARA EL BOTÓN DE VOLVER -->
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gestión de Recetas - Restaurante Wayas</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+  <div class="container py-5">
+    <h2 class="text-center mb-4 title-wayas">🍳 Gestión de Recetas</h2>
+    <p class="text-center subtitle-wayas">Selecciona una actividad para continuar</p>
+
+    <div class="row justify-content-center mt-5">
+      <div class="col-md-8 d-grid gap-4">
+        <a href="recetas_registrar_borrador.html" class="btn btn-primary btn-lg shadow">Registrar receta borrador</a>
+        <a href="recetas_enviar_validacion.html" class="btn btn-success btn-lg shadow">Enviar receta a validación</a>
+        <a href="recetas_validar.html" class="btn btn-warning btn-lg shadow">Validar receta</a>
+        <a href="recetas_ajustar.html" class="btn btn-info btn-lg shadow">Ajustar receta</a>
+        <a href="recetas_consultar_aprobadas.html" class="btn btn-secondary btn-lg shadow">Consultar receta aprobada</a>
+      </div>
+    </div>
+
+    <div class="text-center mt-4">
+      <a th:href="@{/dashboard}" class="btn btn-dark">⬅ Volver al menú principal</a>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

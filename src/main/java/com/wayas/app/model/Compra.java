@@ -1,7 +1,11 @@
 package com.wayas.app.model;
+
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import com.wayas.app.model.Insumo;
 
 @Entity
 @Table(name = "tb_compra")
@@ -24,6 +28,10 @@ public class Compra {
     private String nroFactura;
     @Column(columnDefinition = "TEXT") private String detalleInsumosComprados; 
     private String estado; 
+    
+    @OneToMany(mappedBy = "compra", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<DetalleCompra> detalles = new ArrayList<>();
+
 	public Long getId() {
 		return id;
 	}
@@ -78,6 +86,19 @@ public class Compra {
 	public void setEstado(String estado) {
 		this.estado = estado;
 	}
-
     
+    public List<DetalleCompra> getDetalles() {
+        return detalles;
+    }
+
+    public void setDetalles(List<DetalleCompra> detalles) {
+        this.detalles = detalles;
+    }
+    public void agregarDetalle(Insumo insumo, BigDecimal cantidad) {
+        DetalleCompra detalle = new DetalleCompra();
+        detalle.setCompra(this);
+        detalle.setInsumo(insumo);
+        detalle.setCantidad(cantidad);
+        this.detalles.add(detalle);
+    }
 }

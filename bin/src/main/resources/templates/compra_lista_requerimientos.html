@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Generar Lista de Requerimientos</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+
+<body>
+    <div class="container py-5">
+        <h2 class="text-center mb-4 title-wayas">📦 Generar Lista de Requerimientos</h2>
+
+         <!-- Alertas de éxito/error (sin cambios) -->
+         <div th:if="${mensajeExito}" class="alert alert-success alert-dismissible fade show" role="alert">
+          <span th:text="${mensajeExito}"></span>
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        <div th:if="${mensajeError}" class="alert alert-danger alert-dismissible fade show" role="alert">
+          <span th:text="${mensajeError}"></span>
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        <div th:if="${mensajeTemporal}" class="alert alert-info alert-dismissible fade show" role="alert">
+          <span th:text="${mensajeTemporal}"></span>
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+
+        <div class="card mb-4 shadow">
+            <div class="card-body">
+                <h5 class="card-title">⚠️ Insumos con stock bajo</h5>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-sm"> 
+                        <thead class="table-light">
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Actual</th>
+                                <th>Unidad</th>
+                                <th>Proveedor Sug.</th>
+                                <th>Cantidad</th> 
+                                <th>Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="ins : ${insumosBajoStock}">
+                                <td th:text="${ins.descripcion}">Lechuga</td>
+                                <td th:text="${#numbers.formatDecimal(ins.stockActual, 1, 'COMMA', 1, 'POINT')}">5.0</td> 
+                                <td th:text="${ins.unidadMedida}">kg</td>
+                                <td th:text="${ins.proveedor?.razonSocial} ?: '-'">AgroPerú</td>
+                                <form th:action="@{/requerimientos/agregarItem}" method="post" class="d-contents"> 
+                                <td>
+                                    <input type="hidden" name="insumoId" th:value="${ins.idInsumo}" />
+                                    <input type="hidden" name="proveedorId" th:value="${ins.proveedor?.idProv}" />
+                                    <input type="number" step="0.01" name="cantidad" value="1" min="0.01" class="form-control form-control-sm" style="width: 80px;" required />
+                                </td>
+                                <td>
+                                    <button type="submit" class="btn btn-sm btn-success" title="Agregar a requerimiento actual">➕</button>
+                                </td>
+                                </form>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(insumosBajoStock)}">
+                                <td colspan="6" class="text-center text-muted">No hay insumos con stock bajo.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-4 shadow">
+            <div class="card-body">
+                <h5 class="card-title">📋 Ítems en el Requerimiento Actual</h5>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Insumo</th>
+                                <th>Cantidad</th>
+                                <th>Unidad</th>
+                                <th>Proveedor</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:if="${requerimientoActual == null or #lists.isEmpty(requerimientoActual.detalles)}">
+                                <td colspan="5" class="text-center text-muted">Aún no has agregado ítems al requerimiento.</td>
+                            </tr>
+                            <tr th:each="detalle, iterStat : ${requerimientoActual?.detalles}">
+                                <td th:text="${detalle.insumo?.descripcion}">Insumo Nombre</td>
+                                <td th:text="${#numbers.formatDecimal(detalle.cantidad, 1, 'COMMA', 3, 'POINT')}">1.000</td>
+                                <td th:text="${detalle.insumo?.unidadMedida}">kg</td>
+                                <td th:text="${detalle.proveedor?.razonSocial} ?: '-'">Proveedor Nombre</td>
+                                <td>
+                                    <form th:action="@{/requerimientos/eliminarItem}" method="post" class="d-inline">
+                                        <input type="hidden" name="index" th:value="${iterStat.index}" />
+                                        <button type="submit" class="btn btn-sm btn-danger" title="Eliminar ítem">🗑️</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="text-end mt-3" th:if="${requerimientoActual != null and not #lists.isEmpty(requerimientoActual.detalles)}">
+                     <!-- RUTA CORREGIDA: /requerimientos/guardar -->
+                     <form th:action="@{/requerimientos/guardar}" method="post">
+                         <button type="submit" class="btn btn-success">📤 Generar y Guardar Requerimiento</button>
+                     </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow">
+            <div class="card-body">
+                <h5 class="card-title">📚 Historial de requerimientos enviados</h5>
+                 <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Nro. Req.</th>
+                                <th>Fecha</th>
+                                <th>Estado</th>
+                                <th>Insumos (Resumen)</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="req : ${requerimientosHistorial}">
+                                <td th:text="${req.codigoRequerimiento}">REQ-00125</td>
+                                <td th:text="${req.fechaGeneracion} ? ${#temporals.format(req.fechaGeneracion, 'dd-MM-yyyy')} : 'FECHA NULA'">10-10-2025</td>
+                                <td>
+                                    <span class="badge"
+                                          th:classappend="${#strings.equalsIgnoreCase(req.estado, 'PENDIENTE')} ? 'bg-warning text-dark' : (${#strings.equalsIgnoreCase(req.estado, 'COMPRADO')} ? 'bg-info text-dark' : (${#strings.equalsIgnoreCase(req.estado, 'INGRESADO')} ? 'bg-success' : 'bg-secondary'))"
+                                          th:text="${req.estado}">Pendiente</span>
+                                </td>
+                                <td>
+									<span th:if="${!#lists.isEmpty(req.detalles)}"
+									      th:text="${#strings.abbreviate(#strings.listJoin(req.detalles.![insumo?.descripcion ?: 'N/A'], ', '), 40)}">
+									    Lechuga, Pollo...
+									</span>
+                                     <span th:if="${#lists.isEmpty(req.detalles)}">-</span>
+                                </td>
+                               <td>
+                                 <div class="d-flex gap-1">
+                                    <a href="#" th:href="@{/requerimientos/detalle/{id}(id=${req.id})}" class="btn btn-sm btn-outline-primary disabled" title="Ver Detalle">🔍</a> 
+                                    <!-- RUTA CORREGIDA: /requerimientos/eliminar/{id} -->
+                                    <form th:if="${#strings.equalsIgnoreCase(req.estado, 'PENDIENTE')}"
+                                          th:action="@{/requerimientos/eliminar/{id}(id=${req.id})}" method="post" class="d-inline"
+                                          th:data-codigo="${req.codigoRequerimiento}" onsubmit="return confirmarEliminacionRequerimiento(this);">
+                                          <button type="submit" class="btn btn-sm btn-outline-danger" title="Eliminar">🗑️</button>
+                                    </form>
+                                 </div>
+                               </td>
+                            </tr>
+                             <tr th:if="${#lists.isEmpty(requerimientosHistorial)}">
+                                <td colspan="5" class="text-center text-muted">No hay requerimientos en el historial.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mt-4">
+            <!-- Botón de volver (ya estaba bien) -->
+            <a th:href="@{/gestion_compra}" class="btn btn-secondary">⬅ Volver a Gestión de Compra</a>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function confirmarEliminacionRequerimiento(formElement) {
+            const codigo = formElement.getAttribute('data-codigo');
+            return confirm('¿Estás seguro de eliminar el requerimiento ' + (codigo || 'seleccionado') + '?');
+        }
+    </script>
+</body>
+</html>

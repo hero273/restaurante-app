@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Registrar Receta Borrador</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Estilos personalizados -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+  <div class="container py-5">
+    <h2 class="text-center mb-4 title-wayas">📝 Registrar Receta Borrador</h2>
+
+    <!-- Formulario de receta -->
+    <div class="card mb-4 shadow">
+      <div class="card-body">
+        <form class="row g-3">
+          <div class="col-md-6">
+            <label for="nombreReceta" class="form-label">Nombre de la receta</label>
+            <input type="text" class="form-control" id="nombreReceta" placeholder="Ej. Lomo saltado">
+          </div>
+          <div class="col-md-6">
+            <label for="categoria" class="form-label">Categoría</label>
+            <select id="categoria" class="form-select">
+              <option>Entrada</option>
+              <option>Plato principal</option>
+              <option>Postre</option>
+              <option>Bebida</option>
+            </select>
+          </div>
+          <div class="col-md-12">
+            <label for="descripcion" class="form-label">Descripción</label>
+            <textarea class="form-control" id="descripcion" rows="2"
+              placeholder="Breve descripción del plato..."></textarea>
+          </div>
+          <div class="col-md-3">
+            <label for="porciones" class="form-label">N° de porciones</label>
+            <input type="number" class="form-control" id="porciones" placeholder="Ej. 4">
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Ingredientes -->
+    <div class="card mb-4 shadow">
+      <div class="card-body">
+        <h5 class="card-title">🥕 Ingredientes</h5>
+        <form class="row g-3">
+          <div class="col-md-4">
+            <input type="text" class="form-control" placeholder="Nombre del ingrediente">
+          </div>
+          <div class="col-md-3">
+            <input type="number" class="form-control" placeholder="Cantidad">
+          </div>
+          <div class="col-md-3">
+            <select class="form-select">
+              <option>kg</option>
+              <option>g</option>
+              <option>ml</option>
+              <option>unidades</option>
+            </select>
+          </div>
+          <div class="col-md-2 text-end">
+            <button class="btn btn-outline-primary">➕ Agregar</button>
+          </div>
+        </form>
+
+        <!-- Lista simulada -->
+        <ul class="list-group mt-3">
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            500 g de carne de res
+            <button class="btn btn-sm btn-danger">🗑️</button>
+          </li>
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            2 unidades de tomate
+            <button class="btn btn-sm btn-danger">🗑️</button>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Pasos de preparación -->
+    <div class="card mb-4 shadow">
+      <div class="card-body">
+        <h5 class="card-title">👨‍🍳 Pasos de preparación</h5>
+        <label for="pasosReceta" class="form-label">Describe los pasos de preparación</label>
+        <textarea class="form-control" id="pasosReceta" rows="5"
+          placeholder="Ej. 1. Cortar la carne en tiras finas. 2. Saltear con cebolla y tomate."></textarea>
+      </div>
+    </div>
+
+    <!-- Acciones -->
+    <!-- Acciones -->
+    <div class="d-flex justify-content-between mt-4">
+      <button class="btn btn-success" onclick="guardarReceta()">💾 Guardar como borrador</button>
+    </div>
+
+    <!-- Recetas guardadas como borrador -->
+    <div class="card shadow mt-5">
+      <div class="card-body">
+        <h5 class="card-title">📚 Recetas guardadas como borrador</h5>
+        <table class="table table-hover">
+          <thead class="table-light">
+            <tr>
+              <th>Nombre</th>
+              <th>Categoría</th>
+              <th>Porciones</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Lomo saltado</td>
+              <td>Plato principal</td>
+              <td>4</td>
+              <td class="d-flex gap-2">
+                <button class="btn btn-sm btn-warning" onclick="cargarReceta('Lomo saltado')">✏️ Editar</button>
+                <button class="btn btn-sm btn-danger" onclick="confirmarEliminacion('Lomo saltado')">🗑️
+                  Eliminar</button>
+              </td>
+            </tr>
+            <tr>
+              <td>Ensalada fresca</td>
+              <td>Entrada</td>
+              <td>2</td>
+              <td class="d-flex gap-2">
+                <button class="btn btn-sm btn-warning" onclick="cargarReceta('Ensalada fresca')">✏️ Editar</button>
+                <button class="btn btn-sm btn-danger" onclick="confirmarEliminacion('Ensalada fresca')">🗑️
+                  Eliminar</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Volver -->
+    <div class="text-center mt-4">
+      <a href="gestion_recetas.html" class="btn btn-secondary">⬅ Volver a Gestión de Recetas</a>
+    </div>
+  </div>
+
+  <script>
+    let recetaEditando = null;
+
+    function cargarReceta(nombre) {
+      const recetas = {
+        "Lomo saltado": {
+          nombre: "Lomo saltado",
+          categoria: "Plato principal",
+          descripcion: "Plato criollo con carne salteada",
+          porciones: 4,
+          pasos: "1. Cortar la carne en tiras finas.\n2. Saltear con cebolla y tomate."
+        },
+        "Ensalada fresca": {
+          nombre: "Ensalada fresca",
+          categoria: "Entrada",
+          descripcion: "Mezcla de vegetales frescos",
+          porciones: 2,
+          pasos: "1. Lavar los vegetales.\n2. Cortar en trozos pequeños.\n3. Mezclar y servir."
+        }
+      };
+
+      const receta = recetas[nombre];
+      if (receta) {
+        document.getElementById("nombreReceta").value = receta.nombre;
+        document.getElementById("categoria").value = receta.categoria;
+        document.getElementById("descripcion").value = receta.descripcion;
+        document.getElementById("porciones").value = receta.porciones;
+        document.getElementById("pasosReceta").value = receta.pasos;
+
+        const acciones = document.querySelector(".d-flex.justify-content-between.mt-4");
+        acciones.innerHTML = `
+        <button class="btn btn-warning" onclick="guardarReceta()">💾 Guardar cambios</button>
+      `;
+
+        recetaEditando = nombre;
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    }
+
+    function guardarReceta() {
+      const nombre = document.getElementById("nombreReceta").value.trim();
+
+      if (recetaEditando) {
+        alert(`✅ Se guardaron los cambios para la receta "${recetaEditando}".`);
+        // Aquí iría la lógica para actualizar la receta en base de datos
+      } else {
+        alert(`✅ Borrador guardado con éxito para la receta "${nombre}".`);
+        // Aquí iría la lógica para registrar nueva receta
+      }
+
+      // Limpiar formulario
+      document.getElementById("nombreReceta").value = "";
+      document.getElementById("categoria").value = "Entrada";
+      document.getElementById("descripcion").value = "";
+      document.getElementById("porciones").value = "";
+      document.getElementById("pasosReceta").value = "";
+
+      recetaEditando = null;
+
+      const acciones = document.querySelector(".d-flex.justify-content-between.mt-4");
+      acciones.innerHTML = `
+      <button class="btn btn-success" onclick="guardarReceta()">💾 Guardar como borrador</button>
+    `;
+    }
+
+    function confirmarEliminacion(nombre) {
+      if (confirm(`¿Eliminar la receta "${nombre}"? Esta acción no se puede deshacer.`)) {
+        alert(`✅ Receta "${nombre}" eliminada correctamente.`);
+        // Aquí iría la lógica para eliminar la receta de la base de datos
+      }
+    }
+  </script>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

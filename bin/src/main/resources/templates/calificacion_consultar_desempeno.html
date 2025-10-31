@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Consultar Desempeño de Proveedor</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container py-5">
+    <h2 class="text-center mb-4 title-wayas">📈 Consultar Desempeño de Proveedor</h2>
+
+    <!-- Filtro por proveedor -->
+    <div class="card mb-4 shadow">
+      <div class="card-body">
+        <form class="row g-3" onsubmit="event.preventDefault(); cargarHistorial();">
+          <div class="col-md-10">
+            <label for="proveedor" class="form-label">Proveedor</label>
+            <input list="listaProveedores" id="proveedor" class="form-control" placeholder="Ej. AgroPerú">
+            <datalist id="listaProveedores">
+              <option value="AgroPerú">
+              <option value="Distribuidora Sur">
+              <option value="Mariscos Trujillo">
+              <option value="Granos del Valle">
+              <option value="Aceites y Condimentos S.A.C.">
+            </datalist>
+          </div>
+          <div class="col-md-2 align-self-end text-end">
+            <button type="submit" class="btn btn-primary w-100">🔍 Consultar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Historial de requerimientos calificados -->
+    <div class="card mb-4 shadow">
+      <div class="card-body">
+        <h5 class="card-title">📚 Historial de requerimientos calificados</h5>
+        <table class="table table-striped" id="tablaHistorial">
+          <thead class="table-light">
+            <tr>
+              <th>Requerimiento</th>
+              <th>Fecha</th>
+              <th>Calidad</th>
+              <th>Peso</th>
+              <th>Puntualidad</th>
+              <th>Observaciones</th>
+              <th>Ver</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Exportar resumen -->
+    <div class="text-end mb-4">
+      <button class="btn btn-outline-dark" onclick="exportarExcel()">📊 Exportar Excel</button>
+    </div>
+
+    <!-- Volver -->
+    <div class="text-center">
+      <a href="gestion_calificacion.html" class="btn btn-secondary">⬅ Volver a Gestión de Calificación</a>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS + SheetJS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+
+  <script>
+    const historialCalificaciones = {
+      "AgroPerú": [
+        { req: "REQ-0001", fecha: "2025-10-14", calidad: "Bueno", peso: "Regular", puntualidad: "Bueno", obs: "Entrega puntual pero empaques dañados" },
+        { req: "REQ-0005", fecha: "2025-10-11", calidad: "Bueno", peso: "Bueno", puntualidad: "Bueno", obs: "Todo correcto" },
+        { req: "REQ-0009", fecha: "2025-10-07", calidad: "Regular", peso: "Bueno", puntualidad: "Regular", obs: "Entrega parcial" },
+        { req: "REQ-0012", fecha: "2025-10-04", calidad: "Bueno", peso: "Bueno", puntualidad: "Bueno", obs: "Sin observaciones" }
+      ],
+      "Distribuidora Sur": [
+        { req: "REQ-0003", fecha: "2025-10-10", calidad: "Regular", peso: "Malo", puntualidad: "Regular", obs: "Faltó peso en verduras" },
+        { req: "REQ-0006", fecha: "2025-10-08", calidad: "Bueno", peso: "Bueno", puntualidad: "Bueno", obs: "Entrega completa" },
+        { req: "REQ-0010", fecha: "2025-10-06", calidad: "Regular", peso: "Regular", puntualidad: "Bueno", obs: "Empaque dañado" },
+        { req: "REQ-0013", fecha: "2025-10-03", calidad: "Malo", peso: "Malo", puntualidad: "Regular", obs: "Demora en entrega" }
+      ],
+      "Mariscos Trujillo": [
+        { req: "REQ-0007", fecha: "2025-10-09", calidad: "Bueno", peso: "Bueno", puntualidad: "Bueno", obs: "Producto fresco" },
+        { req: "REQ-0011", fecha: "2025-10-05", calidad: "Regular", peso: "Regular", puntualidad: "Regular", obs: "Entrega parcial" },
+        { req: "REQ-0014", fecha: "2025-10-02", calidad: "Bueno", peso: "Bueno", puntualidad: "Bueno", obs: "Sin observaciones" },
+        { req: "REQ-0016", fecha: "2025-10-01", calidad: "Malo", peso: "Regular", puntualidad: "Malo", obs: "Producto en mal estado" }
+      ],
+      "Granos del Valle": [
+        { req: "REQ-0008", fecha: "2025-10-08", calidad: "Bueno", peso: "Bueno", puntualidad: "Bueno", obs: "Entrega completa" },
+        { req: "REQ-0015", fecha: "2025-10-02", calidad: "Regular", peso: "Regular", puntualidad: "Regular", obs: "Demora leve" },
+        { req: "REQ-0017", fecha: "2025-09-30", calidad: "Bueno", peso: "Bueno", puntualidad: "Bueno", obs: "Sin observaciones" },
+        { req: "REQ-0018", fecha: "2025-09-29", calidad: "Malo", peso: "Malo", puntualidad: "Regular", obs: "Producto vencido" }
+      ],
+      "Aceites y Condimentos S.A.C.": [
+        { req: "REQ-0019", fecha: "2025-09-28", calidad: "Bueno", peso: "Bueno", puntualidad: "Bueno", obs: "Entrega perfecta" },
+        { req: "REQ-0020", fecha: "2025-09-27", calidad: "Regular", peso: "Regular", puntualidad: "Regular", obs: "Demora leve" },
+        { req: "REQ-0021", fecha: "2025-09-26", calidad: "Malo", peso: "Malo", puntualidad: "Malo", obs: "Producto dañado" },
+        { req: "REQ-0022", fecha: "2025-09-25", calidad: "Bueno", peso: "Bueno", puntualidad: "Bueno", obs: "Sin observaciones" }
+      ]
+    };
+
+    function cargarHistorial() {
+      const proveedor = document.getElementById("proveedor").value.trim();
+      const tabla = document.querySelector("#tablaHistorial tbody");
+      tabla.innerHTML = "";
+
+      if (historialCalificaciones[proveedor]) {
+        historialCalificaciones[proveedor].forEach(item => {
+          const fila = document.createElement("tr");
+          fila.innerHTML = `
+            <td>${item.req}</td>
+            <td>${item.fecha}</td>
+            <td>${item.calidad}</td>
+            <td>${item.peso}</td>
+            <td>${item.puntualidad}</td>
+            <td>${item.obs}</td>
+            <td><button class="btn btn-sm btn-outline-primary">🔍</button></td>
+          `;
+          tabla.appendChild(fila);
+        });
+      } else {
+        const fila = document.createElement("tr");
+        fila.innerHTML = `<td colspan="7" class="text-center text-muted">No se encontraron calificaciones para el proveedor ingresado.</td>`;
+        tabla.appendChild(fila);
+      }
+    }
+
+    function exportarExcel() {
+     
+      const tabla = document.getElementById("tablaHistorial");
+      const wb = XLSX.utils.table_to_book(tabla, { sheet: "Historial" });
+      XLSX.writeFile(wb, "Historial_Calificaciones.xlsx");
+    }
+  </script>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gestión de Insumos</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" th:href="@{/css/styles.css}">
+  </head>
+
+<body>
+  <div class="container py-5">
+    <h2 class="text-center mb-4 title-wayas">🛠️ Gestión de Insumos</h2>
+
+    <div th:if="${mensajeExito}" class="alert alert-success alert-dismissible fade show" role="alert">
+      <span th:text="${mensajeExito}"></span>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    <div th:if="${mensajeError}" class="alert alert-danger alert-dismissible fade show" role="alert">
+      <span th:text="${mensajeError}"></span>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <div class="card mb-4 shadow">
+      <div class="card-body">
+        <h5 class="card-title" th:text="${insumo.idInsumo == null} ? '➕ Agregar nuevo insumo' : '✏️ Editar Insumo'">➕ Agregar nuevo insumo</h5>
+        <form id="formNuevoInsumo" class="row g-3"
+              th:action="@{/inventario/insumos/guardar}" method="post" th:object="${insumo}">
+          <input type="hidden" th:field="*{idInsumo}" />
+
+          <div class="col-md-4">
+            <label for="nombreInsumo" class="form-label">Nombre del insumo</label>
+            <input type="text" class="form-control" id="nombreInsumo" required th:field="*{descripcion}">
+          </div>
+          <div class="col-md-4">
+            <label for="categoriaInsumo" class="form-label">Categoría</label>
+            <select class="form-select" id="categoriaInsumo" th:field="*{categoria}">
+              <option value="">-- Seleccionar --</option>
+              <option value="Verduras">Verduras</option>
+              <option value="Carnes">Carnes</option>
+              <option value="Frutas">Frutas</option>
+              <option value="Lacteos">Lácteos</option>
+              <option value="Abarrotes">Abarrotes</option>
+              <option value="Bebidas">Bebidas</option>
+              <option value="Otros">Otros</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label for="proveedorSelect" class="form-label">Proveedor Principal</label>
+            <select class="form-select" id="proveedorSelect" th:field="*{proveedor.idProv}">
+              <option value="">-- Ninguno --</option>
+              <option th:each="prov : ${proveedores}" th:value="${prov.idProv}" th:text="${prov.razonSocial}"></option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label for="cantidadInsumo" class="form-label">Cantidad actual</label>
+            <input type="number" step="0.001" class="form-control" id="cantidadInsumo" required th:field="*{stockActual}">
+          </div>
+          <div class="col-md-4">
+            <label for="unidadMedida" class="form-label">Unidad de medida</label>
+            <input type="text" class="form-control" id="unidadMedida" placeholder="Ej. kg, L, un" required th:field="*{unidadMedida}">
+          </div>
+          <div class="col-md-4">
+            <label for="fechaVencimiento" class="form-label">Fecha de vencimiento</label>
+            <input type="date" class="form-control" id="fechaVencimiento" th:field="*{fechaVencimiento}">
+          </div>
+          <div class="col-md-4">
+              <label for="precioCompraInput" class="form-label">Precio Compra (S/)</label>
+              <input type="number" step="0.01" class="form-control" id="precioCompraInput" placeholder="Ej: 2.50" th:field="*{precioCompra}">
+          </div>
+          <div class="col-md-4">
+             <label for="stockMinimoInput" class="form-label">Stock Mínimo</label>
+             <input type="number" step="0.001" class="form-control" id="stockMinimoInput" placeholder="Ej. 5" required th:field="*{stockMinimo}">
+          </div>
+           <div class="col-md-4">
+               <label for="estadoSelect" class="form-label">Estado</label>
+               <select class="form-select" id="estadoSelect" th:field="*{estado}">
+                   <option value="activo">Activo</option>
+                   <option value="inactivo">Inactivo</option>
+               </select>
+           </div>
+
+          <div class="col-12 text-end">
+            <button type="submit" class="btn btn-primary" id="btnGuardar"
+                    th:text="${insumo.idInsumo == null} ? '➕ Guardar Insumo' : '💾 Guardar Cambios'">Guardar insumo</button>
+            <a th:href="@{/inventario/insumos}" class="btn btn-secondary">Cancelar</a>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <form th:action="@{/inventario/insumos}" method="get" class="row mb-3 g-3 align-items-end">
+        <div class="col-md-4">
+            <label for="buscarInsumo" class="form-label">Buscar insumo</label>
+            <input type="text" class="form-control" name="buscarInsumo" id="buscarInsumo" placeholder="Ej. Tomate" th:value="${param.buscarInsumo}">
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-outline-primary w-100">🔍 Buscar</button>
+        </div>
+         <div class="col-md-2">
+            <a th:href="@{/inventario/insumos}" class="btn btn-outline-secondary w-100">Limpiar</a>
+        </div>
+    </form>
+
+    <div class="card shadow">
+      <div class="card-body">
+        <h5 class="card-title">📦 Historial de Insumos agregados</h5>
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+              <thead class="table-light">
+                <tr>
+                  <th>Nombre</th>
+                  <th>Categoría</th>
+                  <th>Stock Actual</th>
+                  <th>Unidad</th>
+                  <th>Proveedor</th>
+                  <th>Fec. Venc.</th>
+                  <th>Stock Mín.</th>
+                  <th>Estado</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr th:each="ins : ${insumos}"
+                    th:classappend="${ins.stockActual != null and ins.stockMinimo != null and ins.stockActual.compareTo(ins.stockMinimo) <= 0} ? 'table-danger' : ''">
+                  <td th:text="${ins.descripcion}">Tomate</td>
+                  <td th:text="${ins.categoria}">Verduras</td>
+                  <td th:text="${#numbers.formatDecimal(ins.stockActual, 1, 'COMMA', 3, 'POINT')}">5.000</td>
+                  <td th:text="${ins.unidadMedida}">kg</td>
+                  <td th:text="${ins.proveedor?.razonSocial} ?: '-'">Distribuidora Lima</td>
+                  <td th:text="${ins.fechaVencimiento != null} ? ${#temporals.format(ins.fechaVencimiento, 'dd-MM-yyyy')} : '-'">15-11-2025</td>
+                  <td th:text="${#numbers.formatDecimal(ins.stockMinimo, 1, 'COMMA', 3, 'POINT')}">2.000</td>
+                  <td>
+                      <span class="badge"
+                            th:classappend="${#strings.equalsIgnoreCase(ins.estado, 'activo')} ? 'bg-success' : 'bg-secondary'"
+                            th:text="${#strings.capitalize(ins.estado)}">Activo</span>
+                  </td>
+                  <td>
+                    <div class="d-flex gap-1">
+                        <a th:href="@{/inventario/insumos/editar/{id}(id=${ins.idInsumo})}" class="btn btn-sm btn-warning" title="Editar">✏️</a>
+						<a th:href="@{/inventario/insumos/eliminar/{id}(id=${ins.idInsumo})}" class="btn btn-sm btn-danger" title="Eliminar"
+						   th:attr="data-descripcion=${ins.descripcion}"
+						   onclick="return confirm('¿Estás seguro de eliminar el insumo \'' + this.getAttribute('data-descripcion') + '\'?');">🗑️</a>
+                    </div>
+                  </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(insumos)}">
+                  <td colspan="9" class="text-center text-muted">No hay insumos registrados o que coincidan con la búsqueda.</td>
+                </tr>
+              </tbody>
+            </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="text-center mt-4">
+      <a th:href="@{/dashboard}" class="btn btn-secondary">⬅ Volver al Menú Principal</a>
+    </div>
+
+  </div> <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>

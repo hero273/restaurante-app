@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Historial de Compras</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+<div class="container py-5">
+    <h2 class="text-center mb-4 title-wayas">📜 Historial de Compras</h2>
+
+     <div th:if="${mensajeExito}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <span th:text="${mensajeExito}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    <div th:if="${mensajeError}" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <span th:text="${mensajeError}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <!-- Tabla de Historial -->
+    <div class="card shadow">
+        <div class="card-body">
+            <h5 class="card-title">Compras Registradas</h5>
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Código Compra</th>
+                            <th>Nro. Req.</th>
+                            <th>Fecha</th>
+                            <th>Proveedor</th>
+                            <th>Monto (S/.)</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:if="${compras == null or #lists.isEmpty(compras)}">
+                            <td colspan="7" class="text-center text-muted">No hay compras registradas aún.</td>
+                        </tr>
+                        
+                        <tr th:each="compra : ${compras}" th:classappend="${#strings.equalsIgnoreCase(compra.estado, 'ANULADA')} ? 'table-light text-muted' : ''">
+                            <td th:text="${compra.codigoCompra}">COMP-XXXX</td>
+                            <td th:text="${compra.requerimiento?.codigoRequerimiento} ?: '-'">REQ-XXXX</td>
+                            <td th:text="${#temporals.format(compra.fechaCompra, 'dd-MM-yyyy')}">2025-10-30</td>
+                            <td th:text="${compra.proveedor?.razonSocial} ?: 'N/A'">Proveedor</td>
+                            <td th:text="${#numbers.formatDecimal(compra.montoTotal, 1, 'COMMA', 2, 'POINT')}">0.00</td>
+                            <td>
+                               <span class="badge"
+                                     th:classappend="${#strings.equalsIgnoreCase(compra.estado, 'REGISTRADA')} ? 'bg-success' : (${#strings.equalsIgnoreCase(compra.estado, 'ANULADA')} ? 'bg-danger' : 'bg-secondary')"
+                                     th:text="${compra.estado}">REGISTRADA</span>
+                            </td>
+                            <td>
+                                <form th:if="${#strings.equalsIgnoreCase(compra.estado, 'REGISTRADA')}"
+                                      th:action="@{/compras/anular/{id}(id=${compra.id})}" method="post"
+                                      onsubmit="return confirm('¿Está seguro de anular esta compra? Esta acción no se puede deshacer.');">
+                                    <button type="submit" class="btn btn-sm btn-danger">Anular</button>
+                                </form>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="text-center mt-4">
+        <a th:href="@{/gestion_compra}" class="btn btn-secondary">⬅ Volver a Gestión de Compra</a>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
