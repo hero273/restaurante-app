@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gestión de Usuarios</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+
+<body>
+  <div class="container py-5">
+    <h2 class="text-center mb-4 title-wayas">👤 Gestión de Usuarios</h2>
+
+    <div th:if="${mensajeExito}" class="alert alert-success alert-dismissible fade show" role="alert">
+      <span th:text="${mensajeExito}"></span>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    <div th:if="${mensajeError}" class="alert alert-danger alert-dismissible fade show" role="alert">
+      <span th:text="${mensajeError}"></span>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <div class="card mb-4 shadow">
+      <div class="card-body">
+        <h5 class="card-title" th:text="${usuario.id == null} ? '➕ Registrar Nuevo Usuario' : '✏️ Editar Usuario'"></h5>
+        
+        <form th:action="@{/usuarios/guardar}" method="post" th:object="${usuario}" class="row g-3">
+          <input type="hidden" th:field="*{id}" />
+          
+          <div class="col-md-4">
+            <label for="username" class="form-label">Username (Usuario)</label>
+            <input type="text" class="form-control" th:field="*{username}" required>
+          </div>
+          
+          <div class="col-md-4">
+            <label for="password" class="form-label">Contraseña</label>
+            <input type="password" class="form-control" th:field="*{password}" th:placeholder="${usuario.id == null} ? 'Requerida' : 'Dejar en blanco para no cambiar'">
+          </div>
+          
+          <div class="col-md-2">
+            <label for="rol" class="form-label">Rol</label>
+            <select class="form-select" th:field="*{rol}" required>
+              <option value="ADMIN">ADMIN</option>
+              <option value="USER">USER (Solo Ver)</option>
+            </select>
+          </div>
+
+          <div class="col-md-2">
+            <label for="activo" class="form-label">Estado</label>
+            <select class="form-select" th:field="*{activo}">
+              <option value="true">Activo</option>
+              <option value="false">Inactivo</option>
+            </select>
+          </div>
+
+          <div class="col-12 text-end">
+            <button type="submit" class="btn btn-primary" th:text="${usuario.id == null} ? '✅ Registrar' : '💾 Guardar Cambios'"></button>
+            <a th:href="@{/usuarios}" class="btn btn-secondary">Cancelar</a>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="card shadow">
+      <div class="card-body">
+        <h5 class="card-title">📚 Usuarios Registrados</h5>
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead class="table-light">
+              <tr>
+                <th>ID</th>
+                <th>Username</th>
+                <th>Rol</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="u : ${usuarios}">
+                <td th:text="${u.id}">1</td>
+                <td th:text="${u.username}">admin</td>
+                <td th:text="${u.rol}">ADMIN</td>
+                <td>
+                  <span class="badge" th:classappend="${u.activo} ? 'bg-success' : 'bg-secondary'" th:text="${u.activo} ? 'Activo' : 'Inactivo'"></span>
+                </td>
+                <td>
+                  <a th:href="@{/usuarios/editar/{id}(id=${u.id})}" class="btn btn-sm btn-warning" title="Editar">✏️</a>
+                  <a th:href="@{/usuarios/eliminar/{id}(id=${u.id})}" class="btn btn-sm btn-danger" title="Eliminar" onclick="return confirm('¿Seguro que quieres eliminar este usuario?')">🗑️</a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="text-center mt-4">
+      <a th:href="@{/dashboard}" class="btn btn-secondary">⬅ Volver al Menú Principal</a>
+    </div>
+
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
