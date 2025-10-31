@@ -11,8 +11,19 @@
     <div class="container py-5">
         <h2 class="text-center mb-4 title-wayas">📦 Lista de Requerimientos</h2>
 
-         <div th:if="${mensajeExito}" class="alert alert-success alert-dismissible fade show" role="alert" th:text="${mensajeExito}">...</div>
-         <div th:if="${mensajeError}" class="alert alert-danger alert-dismissible fade show" role="alert" th:text="${mensajeError}">...</div>
+         <div th:if="${mensajeExito}" class="alert alert-success alert-dismissible fade show" role="alert">
+          <span th:text="${mensajeExito}"></span>
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        <div th:if="${mensajeError}" class="alert alert-danger alert-dismissible fade show" role="alert">
+          <span th:text="${mensajeError}"></span>
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        <div th:if="${mensajeTemporal}" class="alert alert-info alert-dismissible fade show" role="alert">
+          <span th:text="${mensajeTemporal}"></span>
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
 
         <div sec:authorize="hasAuthority('ADMIN')">
             <div class="card mb-4 shadow">
@@ -123,4 +134,43 @@
                                 </td>
                                 <td>
 									<span th:if="${!#lists.isEmpty(req.detalles)}"
-									      th:text="${#strings.abbreviate(#strings.listJoin(req.detalles.![ins
+									      th:text="${#strings.abbreviate(#strings.listJoin(req.detalles.![insumo?.descripcion ?: 'N/A'], ', '), 40)}">
+									    Lechuga, Pollo...
+									</span>
+                                     <span th:if="${#lists.isEmpty(req.detalles)}">-</span>
+                                </td>
+                               <td sec:authorize="hasAuthority('ADMIN')">
+                                 <div class="d-flex gap-1">
+                                    <a href="#" th:href="@{/requerimientos/detalle/{id}(id=${req.id})}" class="btn btn-sm btn-outline-primary disabled" title="Ver Detalle">🔍</a> 
+                                    <form th:if="${#strings.equalsIgnoreCase(req.estado, 'PENDIENTE')}"
+                                          th:action="@{/requerimientos/eliminar/{id}(id=${req.id})}" method="post" class="d-inline"
+                                          th:data-codigo="${req.codigoRequerimiento}" onsubmit="return confirmarEliminacionRequerimiento(this);">
+                                          <button type="submit" class="btn btn-sm btn-outline-danger" title="Eliminar">🗑️</button>
+                                    </form>
+                                 </div>
+                               </td>
+                            </tr>
+                             <tr th:if="${#lists.isEmpty(requerimientosHistorial)}">
+                                <td th:colspan="${#authorization.expression('hasAuthority(''ADMIN'')') ? 5 : 4}" 
+                                    class="text-center text-muted">No hay requerimientos en el historial.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mt-4">
+            <a th:href="@{/gestion_compra}" class="btn btn-secondary">⬅ Volver a Gestión de Compra</a>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function confirmarEliminacionRequerimiento(formElement) {
+            const codigo = formElement.getAttribute('data-codigo');
+            return confirm('¿Estás seguro de eliminar el requerimiento ' + (codigo || 'seleccionado') + '?');
+        }
+    </script>
+</body>
+</html>

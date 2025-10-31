@@ -1,7 +1,8 @@
 package com.wayas.app.model;
+import com.fasterxml.jackson.annotation.JsonIgnore; 
 import jakarta.persistence.*;
 import java.math.BigDecimal;
-import java.time.LocalDate; // Para fecha de vencimiento
+import java.time.LocalDate; 
 import java.util.Objects;
 
 @Entity
@@ -94,6 +95,7 @@ public class Insumo {
 		this.estado = estado;
 	}
 
+	@JsonIgnore 
 	public Proveedor getProveedor() {
 		return proveedor;
 	}
@@ -123,6 +125,4 @@ public class Insumo {
 				&& Objects.equals(proveedor, other.proveedor) && Objects.equals(stockActual, other.stockActual)
 				&& Objects.equals(stockMinimo, other.stockMinimo) && Objects.equals(unidadMedida, other.unidadMedida);
 	} 
-
-    
 }

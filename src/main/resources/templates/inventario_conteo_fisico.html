@@ -11,9 +11,16 @@
   <div class="container py-5">
     <h2 class="text-center mb-4 title-wayas">📦 Contraste de Inventario</h2>
 
-    <div th:if="${mensajeExito}" class="alert alert-success alert-dismissible fade show" role="alert" th:text="${mensajeExito}">...</div>
-    <div th:if="${mensajeError}" class="alert alert-danger alert-dismissible fade show" role="alert" th:text="${mensajeError}">...</div>
+    <div th:if="${mensajeExito}" class="alert alert-success alert-dismissible fade show" role="alert">
+      <span th:text="${mensajeExito}"></span>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    <div th:if="${mensajeError}" class="alert alert-danger alert-dismissible fade show" role="alert">
+      <span th:text="${mensajeError}"></span>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
 
+    <!-- Tabla de inventario -->
     <div class="card shadow">
       <div class="card-body">
         <div class="table-responsive">
@@ -30,26 +37,26 @@
             </thead>
             <tbody>
               <tr th:if="${#lists.isEmpty(insumos)}">
-                 <td colspan="6" class="text-center text-muted">No hay insumos para mostrar.</td>
+                 <td th:colspan="${#authorization.expression('hasAuthority(''ADMIN'')') ? 6 : 4}" class="text-center text-muted">No hay insumos para mostrar.</td>
               </tr>
+              <!-- Bucle dinámico con Thymeleaf -->
               <tr th:each="ins : ${insumos}" th:classappend="${ins.stockActual != null and ins.stockMinimo != null and ins.stockActual.compareTo(ins.stockMinimo) <= 0} ? 'table-danger' : ''">
                 <td th:text="${ins.descripcion}">Tomate</td>
                 <td th:text="${ins.categoria}">Verduras</td>
                 <td th:text="${#numbers.formatDecimal(ins.stockActual, 1, 'COMMA', 3, 'POINT')}">5.000</td>
                 <td th:text="${ins.unidadMedida}">kg</td>
                 
+                <!-- FORMULARIO SOLO PARA ADMIN -->
                 <form th:action="@{/inventario/contrastar/actualizar}" method="post" class="d-contents" sec:authorize="hasAuthority('ADMIN')">
                     <input type="hidden" name="idInsumo" th:value="${ins.idInsumo}" />
                     <td>
+                        <!-- Usamos 'POINT' para el decimal del input value -->
                         <input type="number" step="0.001" name="conteoFisico" class="form-control form-control-sm" th:value="${#numbers.formatDecimal(ins.stockActual, 1, 'POINT', 3, 'POINT')}" required>
                     </td>
                     <td>
                         <button type="submit" class="btn btn-sm btn-warning">Actualizar</button>
                     </td>
                 </form>
-                
-                <td colspan="2" sec:authorize="!hasAuthority('ADMIN')"></td>
-
               </tr>
             </tbody>
           </table>
