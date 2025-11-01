@@ -22,8 +22,10 @@ public class CalificacionService {
     @Autowired
     private ICompraRepository repoCompra; 
 
+    // --- INICIO MEJORA (PROMEDIO) ---
     @Autowired
     private IProveedorRepository repoProveedor; 
+    // --- FIN MEJORA ---
 
     @Transactional
     public Calificacion guardarCalificacion(Long idCompra, Integer idProveedor, int calidad, int peso, int puntualidad, String observaciones) {
@@ -51,11 +53,63 @@ public class CalificacionService {
         cal.setObservaciones(observaciones);
 
         // 4. Guardar
-        return repoCalificacion.save(cal);
+        Calificacion calGuardada = repoCalificacion.save(cal);
+        
+        // --- INICIO MEJORA (PROMEDIO) ---
+        // 5. Actualizar el puntaje promedio del proveedor
+        actualizarPromedioProveedor(proveedor.getIdProv());
+        // --- FIN MEJORA ---
+        
+        return calGuardada;
     }
 
     // 5. Método para buscar el historial
     public List<Calificacion> historialPorProveedor(Integer idProveedor) {
         return repoCalificacion.findByProveedorIdProv(idProveedor);
     }
+    
+    // --- INICIO MEJORA (PROMEDIO) ---
+    /**
+     * Calcula y actualiza el puntaje promedio de un proveedor basándose
+     * en todo su historial de calificaciones.
+     */
+    @Transactional
+    private void actualizarPromedioProveedor(Integer idProveedor) {
+        Proveedor proveedor = repoProveedor.findById(idProveedor).orElse(null);
+        if (proveedor == null) {
+            return; // No se encontró el proveedor, salir
+        }
+
+        // 1. Obtener todo el historial de calificaciones
+        List<Calificacion> historial = repoCalificacion.findByProveedorIdProv(idProveedor);
+        
+        if (historial.isEmpty()) {
+            // Si no hay historial, resetear a los valores por defecto (ej. 3)
+            proveedor.setPuntajeCalidad(3);
+            proveedor.setPuntajePuntualidad(3);
+            // (El campo 'disponibilidad' no se califica, se deja como esté o se resetea)
+            // proveedor.setPuntajeDisponibilidad(3); 
+        } else {
+            // 2. Calcular los promedios
+            // (Nota: 'peso' de Calificacion no tiene un campo 'puntajePeso' en Proveedor.java, se ignora)
+            
+            double avgCalidad = historial.stream()
+                    .mapToInt(Calificacion::getCalidad)
+                    .average()
+                    .orElse(3.0); // Promedio por defecto si hay error
+
+            double avgPuntualidad = historial.stream()
+                    .mapToInt(Calificacion::getPuntualidad)
+                    .average()
+                    .orElse(3.0);
+                    
+            // 3. Guardamos los promedios redondeados como enteros (ya que el modelo Proveedor usa 'int')
+            proveedor.setPuntajeCalidad((int) Math.round(avgCalidad));
+            proveedor.setPuntajePuntualidad((int) Math.round(avgPuntualidad));
+        }
+        
+        // 4. Guardar el proveedor actualizado
+        repoProveedor.save(proveedor);
+    }
+    // --- FIN MEJORA ---
 }

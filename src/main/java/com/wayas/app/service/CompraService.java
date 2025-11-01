@@ -54,8 +54,10 @@ public class CompraService {
         compra.setNroFactura(nroFactura);
         compra.setDetalleInsumosComprados(detalleTexto);
         compra.setEstado("REGISTRADA");
-        long count = repoCompra.count();
-        compra.setCodigoCompra(String.format("COMP-%d-%d", LocalDate.now().getYear(), count + 1)); 
+        
+        // 1. Dejar el código nulo temporalmente
+        compra.setCodigoCompra(null); 
+        // --- FIN CORRECCIÓN ---
 
         if (insumoIds != null && cantidades != null && insumoIds.size() == cantidades.size()) {
             for (int i = 0; i < insumoIds.size(); i++) {
@@ -68,26 +70,26 @@ public class CompraService {
                 if (insumo != null) {
                     
                     compra.agregarDetalle(insumo, cantidad);
-
-                    
-                    BigDecimal nuevoStock = insumo.getStockActual().add(cantidad);
-                    insumo.setStockActual(nuevoStock);
-                    
-                    insumoService.actualizar(insumo); 
                 }
             }
         }
+        
+        // --- INICIO CORRECCIÓN (RACE CONDITION) ---
+        // 2. Guardar la entidad (con detalles) para que la BD asigne el ID
+        Compra compraGuardada = repoCompra.save(compra);
+
+        // 3. Usar el ID (que sí es único) para generar el código
+        String codigoFinal = String.format("COMP-%d-%04d", 
+                                     compraGuardada.getFechaCompra().getYear(), 
+                                     compraGuardada.getId());
+        compraGuardada.setCodigoCompra(codigoFinal);
+        // --- FIN CORRECCIÓN ---
 
         reqService.actualizarEstado(idRequerimiento, "COMPRADO");
 
-        return repoCompra.save(compra);
+        // 4. Actualizar la entidad con el código final
+        return repoCompra.save(compraGuardada);
     }
-
-    /**
-     * CORRECCIÓN: Método 'anularCompra' actualizado.
-     * Ahora revierte el stock de los insumos asociados a la compra
-     * y regresa el requerimiento al estado 'PENDIENTE'.
-     */
     @Transactional
     public Compra anularCompra(Long idCompra) {
         Compra compra = obtenerPorId(idCompra);
@@ -95,7 +97,6 @@ public class CompraService {
         // Solo anular si está REGISTRADA
         if (compra != null && "REGISTRADA".equalsIgnoreCase(compra.getEstado())) {
 
-            // --- INICIO DE LA CORRECCIÓN ---
             // Revertir el stock de los insumos que se agregaron en esta compra
             if (compra.getDetalles() != null) {
                 for (DetalleCompra detalle : compra.getDetalles()) {
@@ -117,9 +118,6 @@ public class CompraService {
                     }
                 }
             }
-            // --- FIN DE LA CORRECCIÓN ---
-
-            // Marcar la compra como anulada
             compra.setEstado("ANULADA");
             
             // Revertir el estado del requerimiento para que pueda ser comprado de nuevo
@@ -129,7 +127,6 @@ public class CompraService {
             
             return repoCompra.save(compra);
         }
-        // Si ya está anulada o no existe, no hacer nada
         return null;
     }
 }
