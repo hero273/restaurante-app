@@ -1,6 +1,7 @@
 package com.wayas.app.service;
 
 import com.wayas.app.model.Compra;
+import com.wayas.app.model.DetalleCompra;
 import com.wayas.app.model.Insumo;
 import com.wayas.app.model.Proveedor;
 import com.wayas.app.model.Requerimiento;
@@ -31,6 +32,7 @@ public class CompraService {
     public Compra obtenerPorId(Long id) {
         return repoCompra.findById(id).orElse(null);
     }
+    
     @Transactional
     public Compra registrarCompra(Long idRequerimiento, LocalDate fechaCompra, Integer idProveedor,
                                   BigDecimal montoTotal, String nroFactura, String detalleTexto,
@@ -80,14 +82,54 @@ public class CompraService {
 
         return repoCompra.save(compra);
     }
+
+    /**
+     * CORRECCIÓN: Método 'anularCompra' actualizado.
+     * Ahora revierte el stock de los insumos asociados a la compra
+     * y regresa el requerimiento al estado 'PENDIENTE'.
+     */
     @Transactional
     public Compra anularCompra(Long idCompra) {
         Compra compra = obtenerPorId(idCompra);
-        if (compra != null && compra.getEstado().equals("REGISTRADA")) {
+        
+        // Solo anular si está REGISTRADA
+        if (compra != null && "REGISTRADA".equalsIgnoreCase(compra.getEstado())) {
+
+            // --- INICIO DE LA CORRECCIÓN ---
+            // Revertir el stock de los insumos que se agregaron en esta compra
+            if (compra.getDetalles() != null) {
+                for (DetalleCompra detalle : compra.getDetalles()) {
+                    Insumo insumo = detalle.getInsumo();
+                    BigDecimal cantidadAnulada = detalle.getCantidad();
+                    
+                    if (insumo != null && cantidadAnulada != null) {
+                        // Restar la cantidad del stock actual
+                        BigDecimal nuevoStock = insumo.getStockActual().subtract(cantidadAnulada);
+                        
+                        // Seguridad: Evitar stock negativo si se hicieron ajustes manuales
+                        if (nuevoStock.compareTo(BigDecimal.ZERO) < 0) {
+                            insumo.setStockActual(BigDecimal.ZERO);
+                        } else {
+                            insumo.setStockActual(nuevoStock);
+                        }
+                        // Usamos 'guardar' o 'actualizar', ambos deberían funcionar
+                        insumoService.guardar(insumo); 
+                    }
+                }
+            }
+            // --- FIN DE LA CORRECCIÓN ---
+
+            // Marcar la compra como anulada
             compra.setEstado("ANULADA");
+            
+            // Revertir el estado del requerimiento para que pueda ser comprado de nuevo
+            if (compra.getRequerimiento() != null) {
+                 reqService.actualizarEstado(compra.getRequerimiento().getId(), "PENDIENTE");
+            }
             
             return repoCompra.save(compra);
         }
+        // Si ya está anulada o no existe, no hacer nada
         return null;
     }
 }

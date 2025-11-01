@@ -70,7 +70,7 @@ public class ProveedorController {
         return "redirect:/calificacion/proveedores"; 
     }
 
-    @GetMapping("/proveedores/eliminar/{id}") 
+    @PostMapping("/proveedores/eliminar/{id}") 
     public String eliminarProveedor(@PathVariable("id") Integer id, RedirectAttributes redirectAttrs) {
         Proveedor proveedor = proveedorService.obtenerPorId(id); 
          if (proveedor == null) {

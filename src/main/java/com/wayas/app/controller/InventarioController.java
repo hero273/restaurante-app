@@ -129,7 +129,7 @@ public class InventarioController {
         return "redirect:/inventario/insumos"; 
     }
 
-    @GetMapping("/insumos/eliminar/{id}")
+    @PostMapping("/insumos/eliminar/{id}")
     public String eliminarInsumo(@PathVariable("id") Integer id, RedirectAttributes redirectAttrs) {
         Insumo insumo = insumoService.obtenerPorId(id); 
         if (insumo == null) {

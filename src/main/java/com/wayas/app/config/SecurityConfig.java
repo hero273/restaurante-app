@@ -39,30 +39,61 @@ public class SecurityConfig {
                 
                 // === RESTRICCIONES DE ADMIN ===
                 
-                // 1. El nuevo CRUD de Usuarios
+                // 1. Gestión de Usuarios (CRUD completo)
                 .requestMatchers("/usuarios/**").hasAuthority("ADMIN")
 
-                // 2. Todas las acciones de tipo POST (guardar, crear, actualizar)
+                // 2. TODAS las acciones de MODIFICACIÓN (POST)
                 .requestMatchers(HttpMethod.POST, 
-                    "/calificacion/proveedores/guardar", 
+                    // Calificación
+                    "/calificacion/proveedores/guardar",
+                    "/calificacion/proveedores/eliminar/**", // <-- MOVILIZADO DE GET A POST
+                    "/calificacion/guardar",
+
+                    // Compras
                     "/compras/registrar/guardar", 
                     "/compras/anular/**",
+                    
+                    // Requerimientos
                     "/requerimientos/agregarItem",
                     "/requerimientos/eliminarItem",
                     "/requerimientos/guardar",
                     "/requerimientos/eliminar/**",
+                    
+                    // Inventario
                     "/inventario/contrastar/actualizar",
-                    "/inventario/insumos/guardar"
+                    "/inventario/insumos/guardar",
+                    "/inventario/insumos/eliminar/**", // <-- MOVILIZADO DE GET A POST
+                    
+                    // Recetas (NUEVO MÓDULO)
+                    "/recetas/guardar",
+                    "/recetas/eliminar/**"
+                    
                 ).hasAuthority("ADMIN")
                 
-                // 3. Todas las acciones de tipo GET que eliminan (mala práctica, pero así está en tu código)
-                .requestMatchers(HttpMethod.GET, 
-                    "/calificacion/proveedores/eliminar/**",
-                    "/inventario/insumos/eliminar/**"
-                ).hasAuthority("ADMIN")
+                // 3. SECCIÓN DE GET PARA ELIMINAR (ELIMINADA)
 
                 // === PERMISOS PARA TODOS LOS LOGUEADOS (ADMIN y USER) ===
-                // 4. Permitir todo lo demás (Dashboards, vistas GET de reportes, etc.)
+                // 4. Vistas principales (GET) permitidas para ambos roles
+                .requestMatchers(
+                    "/dashboard",
+                    "/gestion_compra",
+                    "/gestion_inventario",
+                    "/gestion_recetas", 
+                    "/gestion_calificacion",
+                    "/reporte/insumos",
+                    "/requerimientos/generar",
+                    "/compras/registrar",
+                    "/compras/historial",
+                    "/calificacion/proveedores",
+                    "/calificacion/evaluar",
+                    "/calificacion/consultar",
+                    "/inventario/ingresar/pendientes",
+                    "/inventario/contrastar",
+                    "/inventario/insumos",
+                    "/recetas/registrar" // (NUEVO MÓDULO)
+                ).authenticated()
+
+                // 5. Cualquier otra solicitud (que no coincida) debe estar autenticada
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form
@@ -75,7 +106,9 @@ public class SecurityConfig {
                 .logoutSuccessUrl("/login?logout")
                 .permitAll()
             );
-        // http.csrf(csrf -> csrf.disable()); // Descomenta si tienes problemas con formularios POST
+            
+        // NOTA: Mantenemos CSRF habilitado (NO DESCOMENTAR la línea de abajo)
+        // http.csrf(csrf -> csrf.disable()); 
 
         return http.build();
     }
