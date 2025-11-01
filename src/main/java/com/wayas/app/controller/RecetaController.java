@@ -188,6 +188,23 @@ public class RecetaController {
         return "recetas_ajustar"; // Apunta al HTML "recetas_ajustar.html"
     }
     
+    // --- INICIO DE LA SOLUCIÓN ---
+    // Este es el endpoint que faltaba y causaba el 404
+    @PostMapping("/ajustar/reenviar")
+    public String reenviarRecetaRechazada(@RequestParam("recetaId") Long idReceta,
+                                          RedirectAttributes redirectAttrs) {
+        
+        try {
+            // Reutilizamos el servicio para cambiar el estado de "RECHAZADA" de vuelta a "EN_REVISION"
+            Receta receta = recetaService.cambiarEstado(idReceta, "EN_REVISION");
+            redirectAttrs.addFlashAttribute("mensajeExito", "Receta '" + receta.getNombre() + "' reenviada a validación.");
+        } catch (Exception e) {
+            redirectAttrs.addFlashAttribute("mensajeError", "Error al reenviar: " + e.getMessage());
+        }
+
+        // Redirigimos de vuelta a la misma página de "Ajustar"
+        return "redirect:/recetas/ajustar";
+    }    
     
     @PostMapping("/preparar")
     public String prepararReceta(@RequestParam("recetaId") Long idReceta,
