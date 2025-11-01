@@ -11,17 +11,22 @@
   <div class="container py-5">
     <h2 class="text-center mb-4 title-wayas">📈 Consultar Desempeño de Proveedor</h2>
 
-    <!-- Filtro por proveedor -->
+    <!-- INICIO CORRECCIÓN: Formulario GET real -->
     <div class="card mb-4 shadow">
       <div class="card-body">
-        <form class="row g-3" onsubmit="event.preventDefault(); cargarHistorial();">
+        <!-- Este formulario ahora es un GET que recarga la página con los datos -->
+        <form class="row g-3" th:action="@{/calificacion/consultar}" method="get">
           <div class="col-md-10">
             <label for="proveedor" class="form-label">Proveedor</label>
-            <input list="listaProveedores" id="proveedor" class="form-control" placeholder="Ej. AgroPerú">
-            <!-- LISTA DINÁMICA CON THYMELEAF -->
-            <datalist id="listaProveedores">
-              <option th:each="prov : ${proveedores}" th:value="${prov.razonSocial}"></option>
-            </datalist>
+            <!-- Usamos un <select> en lugar de <input> para IDs -->
+            <select id="proveedor" name="idProveedor" class="form-select" onchange="this.form.submit()">
+              <option value="" selected>-- Seleccione un Proveedor --</option>
+              <option th:each="prov : ${proveedores}" 
+                      th:value="${prov.idProv}" 
+                      th:text="${prov.razonSocial}"
+                      th:selected="${selectedProvId != null && prov.idProv == selectedProvId}">
+              </option>
+            </select>
           </div>
           <div class="col-md-2 align-self-end text-end">
             <button type="submit" class="btn btn-primary w-100">🔍 Consultar</button>
@@ -29,44 +34,68 @@
         </form>
       </div>
     </div>
+    <!-- FIN CORRECCIÓN -->
 
-    <!-- ... (El resto de la página, historial y JS estático, sin cambios) ... -->
-    
     <!-- Historial de requerimientos calificados -->
     <div class="card mb-4 shadow">
       <div class="card-body">
-        <h5 class="card-title">📚 Historial de requerimientos calificados</h5>
-        <table class="table table-striped" id="tablaHistorial">
-          <thead class="table-light">
-            <tr>
-              <th>Requerimiento</th>
-              <th>Fecha</th>
-              <th>Calidad</th>
-              <th>Peso</th>
-              <th>Puntualidad</th>
-              <th>Observaciones</th>
-              <th>Ver</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
+        <h5 class="card-title">📚 Historial de calificaciones</h5>
+        <div class="table-responsive">
+          <table class="table table-striped" id="tablaHistorial">
+            <thead class="table-light">
+              <tr>
+                <th>Compra (Req.)</th>
+                <th>Fecha</th>
+                <th>Calidad</th>
+                <th>Peso</th>
+                <th>Puntualidad</th>
+                <th>Observaciones</th>
+              </tr>
+            </thead>
+            <!-- INICIO CORRECCIÓN: Tabla dinámica con Thymeleaf -->
+            <tbody>
+              <!-- Iteramos sobre la variable ${historial} que envía el Controller -->
+              <tr th:each="cal : ${historial}">
+                <td th:text="${cal.compra?.codigoCompra} ?: 'N/A'">COMP-001</td>
+                <td th:text="${#temporals.format(cal.fecha, 'dd-MM-yyyy')}">15-10-2025</td>
+                <td th:text="${cal.getCalidadTexto()}">Bueno</td>
+                <td th:text="${cal.getPesoTexto()}">Regular</td>
+                <td th:text="${cal.getPuntualidadTexto()}">Bueno</td>
+                <td th:text="${cal.observaciones}"></td>
+              </tr>
+              <!-- Mensaje si no hay historial -->
+              <tr th:if="${historial == null OR #lists.isEmpty(historial)}">
+                <td colspan="6" class="text-center text-muted">Seleccione un proveedor para ver su historial.</td>
+              </tr>
+            </tbody>
+            <!-- FIN CORRECCIÓN -->
+          </table>
+        </div>
       </div>
     </div>
-    <div class="text-end mb-4">
+    
+    <div class="text-end mb-4" th:if="${historial != null AND !#lists.isEmpty(historial)}">
       <button class="btn btn-outline-dark" onclick="exportarExcel()">📊 Exportar Excel</button>
     </div>
+
     <div class="text-center">
       <a th:href="@{/gestion_calificacion}" class="btn btn-secondary">⬅ Volver a Gestión de Calificación</a>
     </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- SCRIPT PARA EXPORTAR (YA NO USA JS ESTÁTICO) -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
-  <!-- ... (Script JS estático sin cambios) ... -->
   <script>
-    const historialCalificaciones = { ... };
-    function cargarHistorial() { ... }
-    function exportarExcel() { ... }
+    // El JavaScript estático ha sido eliminado.
+    // La tabla se genera con Thymeleaf.
+
+    function exportarExcel() {
+      // Esta función ahora toma la tabla REAL que se muestra
+      const tabla = document.getElementById("tablaHistorial");
+      const wb = XLSX.utils.table_to_book(tabla, { sheet: "Historial" });
+      XLSX.writeFile(wb, "Historial_Calificaciones.xlsx");
+    }
   </script>
 </body>
 </html>

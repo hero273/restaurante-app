@@ -14,16 +14,18 @@
     <div class="card mb-4 shadow">
       <div class="card-body">
         <h5 class="card-title">🔍 Filtros de búsqueda</h5>
+        <!-- El formulario de filtros está correcto -->
         <form class="row g-3 align-items-end" th:action="@{/reporte/insumos}" method="get">
           <div class="col-md-3">
             <label for="estadoStock" class="form-label">Estado de stock</label>
              <select id="estadoStock" name="estadoStock" class="form-select">
               <option value="" th:selected="${estadoStock == null or estadoStock == ''}">Todos</option>
-              <option value="Bajo" th:selected="${estadoStock == 'Bajo'}">Bajo</option>
+              <option value="Bajo" th:selected="${estadoStock == 'Bajo'}">Bajo (Stock <= Mínimo)</option>
               <option value="Moderado" th:selected="${estadoStock == 'Moderado'}">Moderado</option>
               <option value="Suficiente" th:selected="${estadoStock == 'Suficiente'}">Suficiente</option>
             </select>
           </div>
+          <!-- He mantenido solo el filtro que tenías, puedes agregar los otros si los necesitas -->
           <div class="col-md-6 mt-3"> 
               <button type="submit" class="btn btn-primary">🔍 Aplicar filtros</button>
               <a th:href="@{/reporte/insumos}" class="btn btn-secondary">Limpiar</a> 
@@ -32,10 +34,43 @@
       </div>
     </div>
 
+    <!-- AQUÍ ESTÁ LA CORRECCIÓN -->
     <div class="card shadow">
         <div class="card-body">
+            <h5 class="card-title">Resultados del Reporte</h5>
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Insumo</th>
+                            <th>Categoría</th>
+                            <th>Stock Actual</th>
+                            <th>Stock Mínimo</th>
+                            <th>Unidad</th>
+                            <th>Proveedor</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Iteramos sobre la variable ${insumos} que envía el ReporteController -->
+                        <tr th:each="ins : ${insumos}"
+                            th:classappend="${ins.stockActual != null and ins.stockMinimo != null and ins.stockActual.compareTo(ins.stockMinimo) <= 0} ? 'table-danger' : ''">
+                            <td th:text="${ins.descripcion}">Tomate</td>
+                            <td th:text="${ins.categoria}">Verduras</td>
+                            <td th:text="${#numbers.formatDecimal(ins.stockActual, 1, 'COMMA', 3, 'POINT')}">5.000</td>
+                            <td th:text="${#numbers.formatDecimal(ins.stockMinimo, 1, 'COMMA', 3, 'POINT')}">2.000</td>
+                            <td th:text="${ins.unidadMedida}">kg</td>
+                            <td th:text="${ins.proveedor?.razonSocial} ?: '-'">Proveedor</td>
+                        </tr>
+                        <!-- Mensaje si no hay resultados -->
+                        <tr th:if="${#lists.isEmpty(insumos)}">
+                            <td colspan="6" class="text-center text-muted">No se encontraron insumos con los filtros seleccionados.</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
+        </div>
     </div>
+    <!-- FIN DE LA CORRECCIÓN -->
 
     <div class="text-center mt-4">
       <a th:href="@{/gestion_compra}" class="btn btn-secondary">⬅ Volver a Gestión de Compra</a>

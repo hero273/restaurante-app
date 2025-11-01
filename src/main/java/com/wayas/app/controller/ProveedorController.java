@@ -1,20 +1,22 @@
 package com.wayas.app.controller;
 
+import com.wayas.app.model.Calificacion; // NUEVO
 import com.wayas.app.model.Compra;
-import com.wayas.app.model.Proveedor; 
-import com.wayas.app.service.CompraService; 
-import com.wayas.app.service.ProveedorService; 
+import com.wayas.app.model.Proveedor;
+import com.wayas.app.service.CalificacionService; // NUEVO
+import com.wayas.app.service.CompraService;
+import com.wayas.app.service.ProveedorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*; 
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.util.List; 
-import java.util.stream.Collectors; 
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Controller
-@RequestMapping("/calificacion") 
+@RequestMapping("/calificacion")
 public class ProveedorController {
 
     @Autowired
@@ -22,6 +24,9 @@ public class ProveedorController {
     
     @Autowired
     private CompraService compraService;
+
+    @Autowired
+    private CalificacionService calificacionService; // NUEVO SERVICIO
 
     @GetMapping("/proveedores")
     public String mostrarGestionProveedores(
@@ -80,18 +85,56 @@ public class ProveedorController {
         }
         return "redirect:/calificacion/proveedores";
     }
+
+    // --- CORRECCIÓN 1: EVALUAR PROVEEDOR ---
+
     @GetMapping("/evaluar")
     public String mostrarEvaluarProveedor(Model model) {
+        // Obtenemos solo compras registradas
         List<Compra> comprasRegistradas = compraService.listarTodas().stream()
                 .filter(c -> "REGISTRADA".equalsIgnoreCase(c.getEstado()))
                 .collect(Collectors.toList());
         
         model.addAttribute("compras", comprasRegistradas);
+        // Añadimos un objeto vacío para el formulario
+        model.addAttribute("calificacion", new Calificacion()); 
         return "calificacion_evaluar_proveedor";
     }
+
+    // NUEVO ENDPOINT PARA GUARDAR LA CALIFICACIÓN
+    @PostMapping("/guardar")
+    public String guardarCalificacion(@RequestParam Long idCompra,
+                                      @RequestParam Integer idProveedor,
+                                      @RequestParam int calidad,
+                                      @RequestParam int peso,
+                                      @RequestParam int puntualidad,
+                                      @RequestParam String observaciones,
+                                      RedirectAttributes redirectAttrs) {
+        try {
+            calificacionService.guardarCalificacion(idCompra, idProveedor, calidad, peso, puntualidad, observaciones);
+            redirectAttrs.addFlashAttribute("mensajeExito", "Calificación guardada exitosamente.");
+        } catch (Exception e) {
+            redirectAttrs.addFlashAttribute("mensajeError", "Error al guardar: " + e.getMessage());
+        }
+        return "redirect:/calificacion/evaluar";
+    }
+
+    // --- CORRECCIÓN 2: CONSULTAR DESEMPEÑO ---
+    
     @GetMapping("/consultar")
-    public String mostrarConsultarDesempeno(Model model) {
-        model.addAttribute("proveedores", proveedorService.listarTodos());
+    public String mostrarConsultarDesempeno(
+            @RequestParam(required = false) Integer idProveedor, // Buscamos por ID
+            Model model) {
+        
+        model.addAttribute("proveedores", proveedorService.listarTodos()); // Para el <select>
+        
+        if (idProveedor != null) {
+            // Si se seleccionó un proveedor, buscamos su historial
+            List<Calificacion> historial = calificacionService.historialPorProveedor(idProveedor);
+            model.addAttribute("historial", historial);
+            model.addAttribute("selectedProvId", idProveedor); // Para mantener el valor en el <select>
+        }
+        
         return "calificacion_consultar_desempeno";
     }
 }
