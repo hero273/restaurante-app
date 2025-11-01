@@ -104,4 +104,6 @@ public class CompraController {
         }
         return "redirect:/compras/historial";
     }
+    
+    //test
 }
