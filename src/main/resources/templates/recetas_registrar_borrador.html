@@ -1,224 +1,288 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Registrar Receta Borrador</title>
-  <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <!-- Estilos personalizados -->
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" th:href="@{/css/styles.css}">
 </head>
 
 <body>
   <div class="container py-5">
     <h2 class="text-center mb-4 title-wayas">📝 Registrar Receta Borrador</h2>
 
-    <!-- Formulario de receta -->
-    <div class="card mb-4 shadow">
-      <div class="card-body">
-        <form class="row g-3">
-          <div class="col-md-6">
-            <label for="nombreReceta" class="form-label">Nombre de la receta</label>
-            <input type="text" class="form-control" id="nombreReceta" placeholder="Ej. Lomo saltado">
+    <div th:if="${mensajeExito}" class="alert alert-success alert-dismissible fade show" role="alert" th:text="${mensajeExito}"></div>
+    <div th:if="${mensajeError}" class="alert alert-danger alert-dismissible fade show" role="alert" th:text="${mensajeError}"></div>
+
+    <form th:action="@{/recetas/guardarBorrador}" th:object="${receta}" method="post">
+      
+      <input type="hidden" th:field="*{id}" />
+
+      <div class="card mb-4 shadow">
+        <div class="card-body">
+          <h5 class="card-title" th:text="*{id == null} ? 'Nueva Receta' : 'Editando: ' + *{nombre}">Nueva Receta</h5>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label for="nombreReceta" class="form-label">Nombre de la receta <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="nombreReceta" placeholder="Ej. Lomo saltado" th:field="*{nombre}" required>
+            </div>
+            <div class="col-md-6">
+              <label for="categoria" class="form-label">Categoría</label>
+              <select id="categoria" class="form-select" th:field="*{categoria}">
+                <option value="">-- Seleccionar --</option>
+                <option value="Entrada">Entrada</option>
+                <option value="Plato principal">Plato principal</option>
+                <option value="Postre">Postre</option>
+                <option value="Bebida">Bebida</option>
+              </select>
+            </div>
+            <div class="col-md-12">
+              <label for="descripcion" class="form-label">Descripción</label>
+              <textarea class="form-control" id="descripcion" rows="2"
+                placeholder="Breve descripción del plato..." th:field="*{descripcion}"></textarea>
+            </div>
+            <div class="col-md-3">
+              <label for="porciones" class="form-label">N° de porciones <span class="text-danger">*</span></label>
+              <input type="number" class="form-control" id="porciones" placeholder="Ej. 4" th:field="*{porciones}" required min="1">
+            </div>
           </div>
-          <div class="col-md-6">
-            <label for="categoria" class="form-label">Categoría</label>
-            <select id="categoria" class="form-select">
-              <option>Entrada</option>
-              <option>Plato principal</option>
-              <option>Postre</option>
-              <option>Bebida</option>
-            </select>
-          </div>
-          <div class="col-md-12">
-            <label for="descripcion" class="form-label">Descripción</label>
-            <textarea class="form-control" id="descripcion" rows="2"
-              placeholder="Breve descripción del plato..."></textarea>
-          </div>
-          <div class="col-md-3">
-            <label for="porciones" class="form-label">N° de porciones</label>
-            <input type="number" class="form-control" id="porciones" placeholder="Ej. 4">
-          </div>
-        </form>
+        </div>
       </div>
-    </div>
 
-    <!-- Ingredientes -->
-    <div class="card mb-4 shadow">
-      <div class="card-body">
-        <h5 class="card-title">🥕 Ingredientes</h5>
-        <form class="row g-3">
-          <div class="col-md-4">
-            <input type="text" class="form-control" placeholder="Nombre del ingrediente">
+      <div class="card mb-4 shadow">
+        <div class="card-body">
+          <h5 class="card-title">🥕 Ingredientes (Insumos)</h5>
+          
+          <div id="listaIngredientesDinamica">
+            
+            <th:block th:each="detalle, iterStat : *{detalles}">
+              <div class="row g-2 mb-2 align-items-end">
+                <div class="col-md-5">
+                  <label class="form-label form-label-sm">Insumo</label>
+                  <select class="form-select form-select-sm" name="insumoIds" required>
+                    <option value="">-- Seleccionar Insumo --</option>
+                    <option th:each="ins : ${todosLosInsumos}"
+                            th:value="${ins.idInsumo}"
+                            th:text="${ins.descripcion + ' (' + ins.unidadMedida + ')'}"
+                            th:selected="${ins.idInsumo == detalle.insumo.idInsumo}">
+                    </option>
+                  </select>
+                </div>
+                <div class="col-md-3">
+                  <label class="form-label form-label-sm">Cantidad</label>
+                  <input type="number" step="0.01" min="0.01" class="form-control form-control-sm" name="cantidades" placeholder="Cantidad" th:value="${detalle.cantidad}" required>
+                </div>
+                <div class="col-md-2">
+                  <label class="form-label form-label-sm">Unidad</label>
+                  <input type="text" class="form-control form-control-sm" name="unidades" placeholder="Ej. kg" th:value="${detalle.unidadMedida}" required>
+                </div>
+                <div class="col-md-2">
+                  <button type="button" class="btn btn-sm btn-danger w-100" onclick="eliminarFilaIngrediente(this)">🗑️ Eliminar</button>
+                </div>
+              </div>
+            </th:block>
+            
           </div>
-          <div class="col-md-3">
-            <input type="number" class="form-control" placeholder="Cantidad">
-          </div>
-          <div class="col-md-3">
-            <select class="form-select">
-              <option>kg</option>
-              <option>g</option>
-              <option>ml</option>
-              <option>unidades</option>
-            </select>
-          </div>
-          <div class="col-md-2 text-end">
-            <button class="btn btn-outline-primary">➕ Agregar</button>
-          </div>
-        </form>
-
-        <!-- Lista simulada -->
-        <ul class="list-group mt-3">
-          <li class="list-group-item d-flex justify-content-between align-items-center">
-            500 g de carne de res
-            <button class="btn btn-sm btn-danger">🗑️</button>
-          </li>
-          <li class="list-group-item d-flex justify-content-between align-items-center">
-            2 unidades de tomate
-            <button class="btn btn-sm btn-danger">🗑️</button>
-          </li>
-        </ul>
+          
+          <button type="button" class="btn btn-sm btn-outline-primary mt-2" onclick="agregarFilaIngrediente()">➕ Agregar Ingrediente</button>
+        </div>
       </div>
-    </div>
 
-    <!-- Pasos de preparación -->
-    <div class="card mb-4 shadow">
-      <div class="card-body">
-        <h5 class="card-title">👨‍🍳 Pasos de preparación</h5>
-        <label for="pasosReceta" class="form-label">Describe los pasos de preparación</label>
-        <textarea class="form-control" id="pasosReceta" rows="5"
-          placeholder="Ej. 1. Cortar la carne en tiras finas. 2. Saltear con cebolla y tomate."></textarea>
+      <div class="card mb-4 shadow">
+        <div class="card-body">
+          <h5 class="card-title">👨‍🍳 Pasos de preparación</h5>
+          <textarea class="form-control" id="pasosReceta" rows="5"
+            placeholder="Ej. 1. Cortar la carne en tiras finas. 2. Saltear con cebolla y tomate." th:field="*{pasos}"></textarea>
+        </div>
       </div>
-    </div>
 
-    <!-- Acciones -->
-    <!-- Acciones -->
-    <div class="d-flex justify-content-between mt-4">
-      <button class="btn btn-success" onclick="guardarReceta()">💾 Guardar como borrador</button>
-    </div>
+      <div class="d-flex justify-content-between mt-4">
+        <button type="submit" class="btn btn-success" 
+                th:text="*{id == null} ? '💾 Guardar como borrador' : '💾 Guardar Cambios'">
+          💾 Guardar como borrador
+        </button>
+        <a th:href="@{/recetas/registrar}" class="btn btn-secondary">Cancelar Edición</a>
+      </div>
 
-    <!-- Recetas guardadas como borrador -->
-    <div class="card shadow mt-5">
+    </form> <div class="card shadow mt-5">
       <div class="card-body">
         <h5 class="card-title">📚 Recetas guardadas como borrador</h5>
-        <table class="table table-hover">
-          <thead class="table-light">
-            <tr>
-              <th>Nombre</th>
-              <th>Categoría</th>
-              <th>Porciones</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Lomo saltado</td>
-              <td>Plato principal</td>
-              <td>4</td>
-              <td class="d-flex gap-2">
-                <button class="btn btn-sm btn-warning" onclick="cargarReceta('Lomo saltado')">✏️ Editar</button>
-                <button class="btn btn-sm btn-danger" onclick="confirmarEliminacion('Lomo saltado')">🗑️
-                  Eliminar</button>
-              </td>
-            </tr>
-            <tr>
-              <td>Ensalada fresca</td>
-              <td>Entrada</td>
-              <td>2</td>
-              <td class="d-flex gap-2">
-                <button class="btn btn-sm btn-warning" onclick="cargarReceta('Ensalada fresca')">✏️ Editar</button>
-                <button class="btn btn-sm btn-danger" onclick="confirmarEliminacion('Ensalada fresca')">🗑️
-                  Eliminar</button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead class="table-light">
+              <tr>
+                <th>Nombre</th>
+                <th>Categoría</th>
+                <th>Porciones</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="borrador : ${recetasBorrador}">
+                <td th:text="${borrador.nombre}">Lomo saltado</td>
+                <td th:text="${borrador.categoria}">Plato principal</td>
+                <td th:text="${borrador.porciones}">4</td>
+                <td>
+                  <div class="d-flex gap-2">
+                    <a th:href="@{/recetas/editar/{id}(id=${borrador.id})}" class="btn btn-sm btn-warning">✏️ Editar</a>
+                    
+                    <form th:action="@{/recetas/eliminar/{id}(id=${borrador.id})}" method="post" class="d-inline"
+                          th:data-nombre="${borrador.nombre}"
+                          onsubmit="return confirm('¿Eliminar la receta borrador \'' + this.getAttribute('data-nombre') + '\'?');">
+                      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                      <button type="submit" class="btn btn-sm btn-danger">🗑️ Eliminar</button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+              <tr th:if="${#lists.isEmpty(recetasBorrador)}">
+                <td colspan="4" class="text-center text-muted">No hay borradores guardados.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
 
-    <!-- Volver -->
     <div class="text-center mt-4">
-      <a href="gestion_recetas.html" class="btn btn-secondary">⬅ Volver a Gestión de Recetas</a>
+      <a th:href="@{/gestion_recetas}" class="btn btn-secondary">⬅ Volver a Gestión de Recetas</a>
     </div>
   </div>
 
-  <script>
-    let recetaEditando = null;
-
-    function cargarReceta(nombre) {
-      const recetas = {
-        "Lomo saltado": {
-          nombre: "Lomo saltado",
-          categoria: "Plato principal",
-          descripcion: "Plato criollo con carne salteada",
-          porciones: 4,
-          pasos: "1. Cortar la carne en tiras finas.\n2. Saltear con cebolla y tomate."
-        },
-        "Ensalada fresca": {
-          nombre: "Ensalada fresca",
-          categoria: "Entrada",
-          descripcion: "Mezcla de vegetales frescos",
-          porciones: 2,
-          pasos: "1. Lavar los vegetales.\n2. Cortar en trozos pequeños.\n3. Mezclar y servir."
-        }
-      };
-
-      const receta = recetas[nombre];
-      if (receta) {
-        document.getElementById("nombreReceta").value = receta.nombre;
-        document.getElementById("categoria").value = receta.categoria;
-        document.getElementById("descripcion").value = receta.descripcion;
-        document.getElementById("porciones").value = receta.porciones;
-        document.getElementById("pasosReceta").value = receta.pasos;
-
-        const acciones = document.querySelector(".d-flex.justify-content-between.mt-4");
-        acciones.innerHTML = `
-        <button class="btn btn-warning" onclick="guardarReceta()">💾 Guardar cambios</button>
-      `;
-
-        recetaEditando = nombre;
-        window.scrollTo({ top: 0, behavior: "smooth" });
-      }
-    }
-
-    function guardarReceta() {
-      const nombre = document.getElementById("nombreReceta").value.trim();
-
-      if (recetaEditando) {
-        alert(`✅ Se guardaron los cambios para la receta "${recetaEditando}".`);
-        // Aquí iría la lógica para actualizar la receta en base de datos
-      } else {
-        alert(`✅ Borrador guardado con éxito para la receta "${nombre}".`);
-        // Aquí iría la lógica para registrar nueva receta
-      }
-
-      // Limpiar formulario
-      document.getElementById("nombreReceta").value = "";
-      document.getElementById("categoria").value = "Entrada";
-      document.getElementById("descripcion").value = "";
-      document.getElementById("porciones").value = "";
-      document.getElementById("pasosReceta").value = "";
-
-      recetaEditando = null;
-
-      const acciones = document.querySelector(".d-flex.justify-content-between.mt-4");
-      acciones.innerHTML = `
-      <button class="btn btn-success" onclick="guardarReceta()">💾 Guardar como borrador</button>
-    `;
-    }
-
-    function confirmarEliminacion(nombre) {
-      if (confirm(`¿Eliminar la receta "${nombre}"? Esta acción no se puede deshacer.`)) {
-        alert(`✅ Receta "${nombre}" eliminada correctamente.`);
-        // Aquí iría la lógica para eliminar la receta de la base de datos
-      }
-    }
-  </script>
-
-  <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-</body>
+  
+  <script th:inline="javascript">
+    /*<![CDATA[*/
+    
+    // 1. Obtenemos la lista COMPLETA de insumos desde el controlador
+    const todosLosInsumos = /*[[${todosLosInsumos}]]*/ [];
+    
+    // 2. Función para AGREGAR una nueva fila de ingrediente
+    function agregarFilaIngrediente() {
+        const divLista = document.getElementById("listaIngredientesDinamica");
+        
+        const nuevaFila = document.createElement("div");
+        nuevaFila.className = "row g-2 mb-2 align-items-end";
 
+        // --- Columna 1: Select de Insumos ---
+        const colInsumo = document.createElement("div");
+        colInsumo.className = "col-md-5";
+        // (Añadimos labels para accesibilidad, opcional)
+        const labelInsumo = document.createElement("label");
+        labelInsumo.className = "form-label form-label-sm";
+        labelInsumo.innerText = "Insumo";
+        
+        const selectInsumo = document.createElement("select");
+        selectInsumo.className = "form-select form-select-sm";
+        selectInsumo.name = "insumoIds"; // El name debe coincidir con el @RequestParam
+        selectInsumo.required = true;
+        // (Evento onchange para autocompletar la unidad)
+        selectInsumo.onchange = function() { autocompletarUnidad(this); };
+
+        const defaultOption = document.createElement("option");
+        defaultOption.value = "";
+        defaultOption.text = "-- Seleccionar Insumo --";
+        defaultOption.selected = true;
+        defaultOption.disabled = true;
+        selectInsumo.appendChild(defaultOption);
+
+        // Llenamos el dropdown con los insumos del inventario
+        todosLosInsumos.forEach(insumo => {
+            const option = document.createElement("option");
+            option.value = insumo.idInsumo;
+            option.text = insumo.descripcion;
+            // Guardamos la unidad de medida en un atributo data-*
+            option.setAttribute('data-unidad', insumo.unidadMedida);
+            selectInsumo.appendChild(option);
+        });
+        
+        colInsumo.appendChild(labelInsumo);
+        colInsumo.appendChild(selectInsumo);
+
+        // --- Columna 2: Cantidad ---
+        const colCantidad = document.createElement("div");
+        colCantidad.className = "col-md-3";
+        const labelCantidad = document.createElement("label");
+        labelCantidad.className = "form-label form-label-sm";
+        labelCantidad.innerText = "Cantidad";
+        
+        const inputCantidad = document.createElement("input");
+        inputCantidad.type = "number";
+        inputCantidad.step = "0.01"; // Permite decimales
+        inputCantidad.min = "0.01";
+        inputCantidad.className = "form-control form-control-sm";
+        inputCantidad.name = "cantidades"; 
+        inputCantidad.placeholder = "Cantidad";
+        inputCantidad.required = true;
+        
+        colCantidad.appendChild(labelCantidad);
+        colCantidad.appendChild(inputCantidad);
+
+        // --- Columna 3: Unidad de Medida ---
+        const colUnidad = document.createElement("div");
+        colUnidad.className = "col-md-2";
+        const labelUnidad = document.createElement("label");
+        labelUnidad.className = "form-label form-label-sm";
+        labelUnidad.innerText = "Unidad";
+
+        const inputUnidad = document.createElement("input");
+        inputUnidad.type = "text";
+        inputUnidad.className = "form-control form-control-sm";
+        inputUnidad.name = "unidades"; 
+        inputUnidad.placeholder = "Ej. kg";
+        inputUnidad.required = true;
+
+        colUnidad.appendChild(labelUnidad);
+        colUnidad.appendChild(inputUnidad);
+
+        // --- Columna 4: Botón Eliminar ---
+        const colBoton = document.createElement("div");
+        colBoton.className = "col-md-2";
+        
+        const btnEliminar = document.createElement("button");
+        btnEliminar.type = "button";
+        btnEliminar.className = "btn btn-sm btn-danger w-100";
+        btnEliminar.textContent = "🗑️ Eliminar";
+        btnEliminar.onclick = function() {
+            eliminarFilaIngrediente(this);
+        };
+        
+        colBoton.appendChild(btnEliminar);
+
+        // Añadir todas las columnas a la fila
+        nuevaFila.appendChild(colInsumo);
+        nuevaFila.appendChild(colCantidad);
+        nuevaFila.appendChild(colUnidad);
+        nuevaFila.appendChild(colBoton);
+        
+        // Añadir la fila al contenedor
+        divLista.appendChild(nuevaFila);
+    }
+
+    // 3. Función para ELIMINAR una fila
+    function eliminarFilaIngrediente(button) {
+        // Encuentra el 'div.row' padre más cercano y lo elimina
+        button.closest(".row").remove();
+    }
+    
+    // 4. (Helper) Función para autocompletar la unidad de medida
+    function autocompletarUnidad(selectElement) {
+        // 'selectElement' es el <select> de insumos
+        const selectedOption = selectElement.options[selectElement.selectedIndex];
+        const unidad = selectedOption.getAttribute('data-unidad');
+        
+        // Buscar el input de 'unidad' en la misma fila
+        const fila = selectElement.closest('.row');
+        const inputUnidad = fila.querySelector('input[name="unidades"]');
+        
+        if (inputUnidad) {
+            inputUnidad.value = unidad || "Ej. kg";
+        }
+    }
+    
+    /*]]>*/
+  </script>
+</body>
 </html>

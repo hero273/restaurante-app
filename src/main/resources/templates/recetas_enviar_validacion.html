@@ -1,89 +1,101 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Enviar Receta a Validación</title>
-  <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <!-- Estilos personalizados -->
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" th:href="@{/css/styles.css}">
 </head>
 <body>
   <div class="container py-5">
     <h2 class="text-center mb-4 title-wayas">📤 Enviar Receta a Validación</h2>
 
-    <!-- Selección de receta en borrador -->
-    <div class="card mb-4 shadow">
+    <!-- Mensajes de Alerta -->
+    <div th:if="${mensajeExito}" class="alert alert-success alert-dismissible fade show" role="alert" th:text="${mensajeExito}"></div>
+    <div th:if="${mensajeError}" class="alert alert-danger alert-dismissible fade show" role="alert" th:text="${mensajeError}"></div>
+
+    <!-- Formulario de envío (solo para ADMIN) -->
+    <div class="card mb-4 shadow" sec:authorize="hasAuthority('ADMIN')">
       <div class="card-body">
-        <h5 class="card-title">📝 Seleccionar receta en estado borrador</h5>
-        <form class="row g-3">
-          <div class="col-md-8">
-            <select class="form-select">
-              <option selected>Seleccionar receta</option>
-              <option>Lomo saltado</option>
-              <option>Crema de zapallo</option>
-              <option>Refresco de maracuyá</option>
-            </select>
+        
+        <form th:action="@{/recetas/enviar}" method="post">
+          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+          
+          <h5 class="card-title">📝 Seleccionar receta en estado borrador</h5>
+          <div class="row g-3">
+            <div class="col-md-12">
+              <select class="form-select" name="recetaId" required>
+                <option value="" selected disabled>Seleccionar receta...</option>
+                <!-- Llenamos el dropdown con los borradores de la BD -->
+                <option th:each="borrador : ${recetasBorrador}" 
+                        th:value="${borrador.id}" 
+                        th:text="${borrador.nombre}">
+                  Lomo saltado
+                </option>
+                <option th:if="${#lists.isEmpty(recetasBorrador)}" disabled>No hay borradores para enviar</option>
+              </select>
+            </div>
           </div>
-          <div class="col-md-4">
-            <button class="btn btn-outline-primary w-100">📄 Ver receta</button>
+      
+          <!-- Comentarios opcionales (Ignorados por ahora en el backend) -->
+          <div class="mt-3">
+            <h5 class="card-title">💬 Comentarios para el administrador (opcional)</h5>
+            <textarea class="form-control" name="comentarios" rows="3" placeholder="Ej. Esta receta está pensada para el menú ejecutivo..."></textarea>
+          </div>
+
+          <!-- Acciones -->
+          <div class="text-end mt-4">
+            <button type="submit" class="btn btn-success">📤 Enviar a validación</button>
           </div>
         </form>
+        
       </div>
     </div>
-
-    <!-- Comentarios opcionales -->
-    <div class="card mb-4 shadow">
-      <div class="card-body">
-        <h5 class="card-title">💬 Comentarios para el administrador (opcional)</h5>
-        <textarea class="form-control" rows="3" placeholder="Ej. Esta receta está pensada para el menú ejecutivo..."></textarea>
-      </div>
+    
+    <div class="alert alert-warning" role="alert" sec:authorize="!hasAuthority('ADMIN')">
+      No tienes permisos para enviar recetas a validación.
     </div>
 
-    <!-- Acciones -->
-    <div class="d-flex justify-content-between mt-4">
-      <button class="btn btn-success">📤 Enviar a validación</button>
-    </div>
-
-    <!-- Historial de envíos -->
+    <!-- Historial de envíos (Ahora es dinámico) -->
     <div class="card mt-5 shadow">
       <div class="card-body">
-        <h5 class="card-title">📚 Historial de recetas enviadas</h5>
-        <table class="table table-striped">
-          <thead class="table-light">
-            <tr>
-              <th>Receta</th>
-              <th>Fecha de envío</th>
-              <th>Estado</th>
-              <th>Ver</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Lomo saltado</td>
-              <td>2025-10-14</td>
-              <td><span class="badge bg-warning text-dark">En revisión</span></td>
-              <td><button class="btn btn-sm btn-outline-primary">🔍</button></td>
-            </tr>
-            <tr>
-              <td>Crema de zapallo</td>
-              <td>2025-10-10</td>
-              <td><span class="badge bg-danger">Rechazada</span></td>
-              <td><button class="btn btn-sm btn-outline-primary">🔍</button></td>
-            </tr>
-          </tbody>
-        </table>
+        <h5 class="card-title">📚 Historial de recetas "En Revisión"</h5>
+        <div class="table-responsive">
+          <table class="table table-striped">
+            <thead class="table-light">
+              <tr>
+                <th>Receta</th>
+                <th>Categoría</th>
+                <th>Porciones</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Iteramos sobre las recetas "EN_REVISION" -->
+              <tr th:each="rev : ${recetasEnRevision}">
+                <td th:text="${rev.nombre}">Lomo saltado</td>
+                <td th:text="${rev.categoria}">Plato Principal</td>
+                <td th:text="${rev.porciones}">4</td>
+                <td>
+                  <span class="badge bg-warning text-dark" th:text="${#strings.replace(rev.estado, '_', ' ')}">En revisión</span>
+                </td>
+              </tr>
+              <tr th:if="${#lists.isEmpty(recetasEnRevision)}">
+                <td colspan="4" class="text-center text-muted">No hay recetas en revisión actualmente.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
 
     <!-- Volver -->
     <div class="text-center mt-4">
-      <a href="gestion_recetas.html" class="btn btn-secondary">⬅ Volver a Gestión de Recetas</a>
+      <a th:href="@{/gestion_recetas}" class="btn btn-secondary">⬅ Volver a Gestión de Recetas</a>
     </div>
   </div>
 
-  <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
