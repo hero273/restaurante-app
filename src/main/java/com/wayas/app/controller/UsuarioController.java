@@ -48,7 +48,7 @@ public class UsuarioController {
         return "redirect:/usuarios";
     }
 
-    @GetMapping("/eliminar/{id}")
+    @PostMapping("/eliminar/{id}")
     public String eliminarUsuario(@PathVariable Integer id, RedirectAttributes redirectAttrs) {
         try {
             usuarioService.eliminar(id);

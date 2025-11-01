@@ -40,7 +40,7 @@ public class SecurityConfig {
                 // === RESTRICCIONES DE ADMIN ===
                 
                 // 1. Gestión de Usuarios (CRUD completo)
-                .requestMatchers("/usuarios/**").hasAuthority("ADMIN")
+                .requestMatchers("/usuarios/**","/usuarios/eliminar/**").hasAuthority("ADMIN")
 
                 // 2. TODAS las acciones de MODIFICACIÓN (POST)
                 .requestMatchers(HttpMethod.POST, 
